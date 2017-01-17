@@ -55,6 +55,8 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAxis("MoveForward", this, &ADragoonCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ADragoonCharacter::MoveRight);
 
+	PlayerInputComponent->BindAction( "BasicAttack", IE_Pressed, this, &ADragoonCharacter::BasicAttack );
+
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
@@ -126,4 +128,8 @@ void ADragoonCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void ADragoonCharacter::BasicAttack() {
+	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
 }
