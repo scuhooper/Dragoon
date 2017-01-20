@@ -60,6 +60,10 @@ protected:
 
 	void BasicAttack();
 
+	void MyTurn( float Val );
+
+	void MyLookUp();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

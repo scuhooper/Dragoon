@@ -60,7 +60,7 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Turn", this, &ADragoonCharacter::MyTurn);
 	PlayerInputComponent->BindAxis("TurnRate", this, &ADragoonCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ADragoonCharacter::LookUpAtRate);
@@ -132,4 +132,14 @@ void ADragoonCharacter::MoveRight(float Value)
 
 void ADragoonCharacter::BasicAttack() {
 	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
+}
+
+void ADragoonCharacter::MyTurn( float Val ) {
+	AddControllerYawInput( Val );
+	const FRotator CameraDirection = GetFollowCamera()->GetComponentRotation();
+	Controller->SetControlRotation( CameraDirection );
+}
+
+void ADragoonCharacter::MyLookUp() {
+
 }
