@@ -64,6 +64,8 @@ protected:
 
 	void MyLookUp();
 
+	void SheatheUnsheatheSword();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

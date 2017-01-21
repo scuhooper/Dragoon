@@ -56,6 +56,7 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAxis("MoveRight", this, &ADragoonCharacter::MoveRight);
 
 	PlayerInputComponent->BindAction( "BasicAttack", IE_Pressed, this, &ADragoonCharacter::BasicAttack );
+	PlayerInputComponent->BindAction( "Sheathe/UnsheatheSword", IE_Pressed, this, &ADragoonCharacter::SheatheUnsheatheSword );
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -142,4 +143,8 @@ void ADragoonCharacter::MyTurn( float Val ) {
 
 void ADragoonCharacter::MyLookUp() {
 
+}
+
+void ADragoonCharacter::SheatheUnsheatheSword() {
+	bIsSwordDrawn = !bIsSwordDrawn;	// set is sword drawn to opposite
 }
