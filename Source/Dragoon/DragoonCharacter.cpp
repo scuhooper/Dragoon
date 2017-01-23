@@ -135,10 +135,12 @@ void ADragoonCharacter::BasicAttack() {
 	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
 }
 
-void ADragoonCharacter::MyTurn( float Val ) {
+void ADragoonCharacter::MyTurn( float Val ) {	
 	AddControllerYawInput( Val );
-	const FRotator CameraDirection = GetFollowCamera()->GetComponentRotation();
-	Controller->SetControlRotation( CameraDirection );
+	if ( bIsSwordDrawn ) {
+		FRotator directionToFace( 0, GetFollowCamera()->GetComponentRotation().Yaw, 0 );
+		this->SetActorRotation( directionToFace );
+	}
 }
 
 void ADragoonCharacter::MyLookUp() {
@@ -147,4 +149,5 @@ void ADragoonCharacter::MyLookUp() {
 
 void ADragoonCharacter::SheatheUnsheatheSword() {
 	bIsSwordDrawn = !bIsSwordDrawn;	// set is sword drawn to opposite
+	this->GetCharacterMovement()->bOrientRotationToMovement = !( this->GetCharacterMovement()->bOrientRotationToMovement );
 }
