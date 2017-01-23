@@ -113,6 +113,7 @@ void ADragoonCharacter::MoveForward(float Value)
 		// get forward vector
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
+		moveForward = Value;
 	}
 }
 
@@ -128,6 +129,7 @@ void ADragoonCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
+		moveRight = Value;
 	}
 }
 
@@ -150,4 +152,9 @@ void ADragoonCharacter::MyLookUp() {
 void ADragoonCharacter::SheatheUnsheatheSword() {
 	bIsSwordDrawn = !bIsSwordDrawn;	// set is sword drawn to opposite
 	this->GetCharacterMovement()->bOrientRotationToMovement = !( this->GetCharacterMovement()->bOrientRotationToMovement );
+}
+
+void ADragoonCharacter::ResetMoveFloats() {
+	moveForward = 0;
+	moveRight = 0;
 }

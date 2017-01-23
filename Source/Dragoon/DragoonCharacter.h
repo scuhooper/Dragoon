@@ -26,6 +26,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Movement )
+	float moveForward = 0;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = Movement )
+	float moveRight = 0;
+
 private:
 	bool bIsSwordDrawn;
 
@@ -79,4 +85,7 @@ public:
 
 	UFUNCTION( BlueprintCallable, Category=DragoonPlayer )
 	FORCEINLINE bool GetIsSwordDrawn() const { return bIsSwordDrawn; }
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	void ResetMoveFloats();
 };
