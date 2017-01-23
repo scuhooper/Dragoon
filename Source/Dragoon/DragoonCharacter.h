@@ -26,6 +26,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+private:
+	bool bIsSwordDrawn;
+
 protected:
 
 	/** Resets HMD orientation in VR. */
@@ -57,6 +60,12 @@ protected:
 
 	void BasicAttack();
 
+	void MyTurn( float Val );
+
+	void MyLookUp();
+
+	void SheatheUnsheatheSword();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -67,5 +76,7 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-};
 
+	UFUNCTION( BlueprintCallable, Category=DragoonPlayer )
+	FORCEINLINE bool GetIsSwordDrawn() const { return bIsSwordDrawn; }
+};

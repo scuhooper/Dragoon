@@ -56,11 +56,12 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAxis("MoveRight", this, &ADragoonCharacter::MoveRight);
 
 	PlayerInputComponent->BindAction( "BasicAttack", IE_Pressed, this, &ADragoonCharacter::BasicAttack );
+	PlayerInputComponent->BindAction( "Sheathe/UnsheatheSword", IE_Pressed, this, &ADragoonCharacter::SheatheUnsheatheSword );
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Turn", this, &ADragoonCharacter::MyTurn);
 	PlayerInputComponent->BindAxis("TurnRate", this, &ADragoonCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ADragoonCharacter::LookUpAtRate);
@@ -132,4 +133,21 @@ void ADragoonCharacter::MoveRight(float Value)
 
 void ADragoonCharacter::BasicAttack() {
 	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
+}
+
+void ADragoonCharacter::MyTurn( float Val ) {	
+	AddControllerYawInput( Val );
+	if ( bIsSwordDrawn ) {
+		FRotator directionToFace( 0, GetFollowCamera()->GetComponentRotation().Yaw, 0 );
+		this->SetActorRotation( directionToFace );
+	}
+}
+
+void ADragoonCharacter::MyLookUp() {
+
+}
+
+void ADragoonCharacter::SheatheUnsheatheSword() {
+	bIsSwordDrawn = !bIsSwordDrawn;	// set is sword drawn to opposite
+	this->GetCharacterMovement()->bOrientRotationToMovement = !( this->GetCharacterMovement()->bOrientRotationToMovement );
 }
