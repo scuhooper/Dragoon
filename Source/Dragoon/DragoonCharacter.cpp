@@ -57,6 +57,10 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 
 	PlayerInputComponent->BindAction( "BasicAttack", IE_Pressed, this, &ADragoonCharacter::BasicAttack );
 	PlayerInputComponent->BindAction( "Sheathe/UnsheatheSword", IE_Pressed, this, &ADragoonCharacter::SheatheUnsheatheSword );
+	PlayerInputComponent->BindAction( "StrongAttack", IE_Pressed, this, &ADragoonCharacter::EnableStrongAttackModifier );
+	PlayerInputComponent->BindAction( "StrongAttack", IE_Released, this, &ADragoonCharacter::DisableStrongAttackModifier );
+	PlayerInputComponent->BindAction( "FeintAttack", IE_Pressed, this, &ADragoonCharacter::EnableFeintAttackModifier );
+	PlayerInputComponent->BindAction( "FeintAttack", IE_Released, this, &ADragoonCharacter::DisableFeintAttackModifier );
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -146,7 +150,6 @@ void ADragoonCharacter::MyTurn( float Val ) {
 }
 
 void ADragoonCharacter::MyLookUp() {
-
 }
 
 void ADragoonCharacter::SheatheUnsheatheSword() {
@@ -157,4 +160,24 @@ void ADragoonCharacter::SheatheUnsheatheSword() {
 void ADragoonCharacter::ResetMoveFloats() {
 	moveForward = 0;
 	moveRight = 0;
+}
+
+void ADragoonCharacter::EnableStrongAttackModifier() {
+	bIsStrongAttack = true;
+	UE_LOG( LogTemp, Warning, TEXT( "bIsStrongAttack is %d" ), bIsStrongAttack );
+}
+
+void ADragoonCharacter::DisableStrongAttackModifier() {
+	bIsStrongAttack = false;
+	UE_LOG( LogTemp, Warning, TEXT( "bIsStrongAttack is %d" ), bIsStrongAttack );
+}
+
+void ADragoonCharacter::EnableFeintAttackModifier() {
+	bIsFeintAttack = true;
+	UE_LOG( LogTemp, Warning, TEXT( "bIsFeintAttack is %d" ), bIsFeintAttack );
+}
+
+void ADragoonCharacter::DisableFeintAttackModifier() {
+	bIsFeintAttack = false;
+	UE_LOG( LogTemp, Warning, TEXT( "bIsFeintAttack is %d" ), bIsFeintAttack );
 }

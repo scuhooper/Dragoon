@@ -33,7 +33,11 @@ public:
 	float moveRight = 0;
 
 private:
-	bool bIsSwordDrawn;
+	bool bIsSwordDrawn = false;
+
+	bool bIsStrongAttack = false;
+
+	bool bIsFeintAttack = false;
 
 protected:
 
@@ -71,6 +75,15 @@ protected:
 	void MyLookUp();
 
 	void SheatheUnsheatheSword();
+
+	// Attack modifier functions
+	void EnableStrongAttackModifier();
+
+	void DisableStrongAttackModifier();
+
+	void EnableFeintAttackModifier();
+
+	void DisableFeintAttackModifier();
 
 protected:
 	// APawn interface
