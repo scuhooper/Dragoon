@@ -32,6 +32,9 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = Movement )
 	float moveRight = 0;
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = DragoonCharacter )
+	AActor* sword;
+
 private:
 	bool bIsSwordDrawn = false;
 
