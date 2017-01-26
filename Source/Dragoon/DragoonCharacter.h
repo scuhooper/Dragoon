@@ -110,6 +110,12 @@ public:
 	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
 
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	FORCEINLINE bool GetIsStrongAttacking() const { return bIsStrongAttack; }
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	FORCEINLINE bool GetIsFeintAttacking() const { return bIsFeintAttack; }
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	void ResetMoveFloats();
 
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )

@@ -140,7 +140,6 @@ void ADragoonCharacter::MoveRight(float Value)
 
 void ADragoonCharacter::BasicAttack() {
 	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
-	bIsAttacking = true;
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
 	Controller->SetIgnoreMoveInput( true );
 }
@@ -187,6 +186,7 @@ void ADragoonCharacter::DisableFeintAttackModifier() {
 }
 
 void ADragoonCharacter::AttackDirectionChosen() {
+	bIsAttacking = true;
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 1 );
 }
 
