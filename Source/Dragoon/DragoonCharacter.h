@@ -42,6 +42,8 @@ private:
 
 	bool bIsFeintAttack = false;
 
+	bool bIsAttacking = false;
+
 protected:
 
 	/** Resets HMD orientation in VR. */
@@ -88,6 +90,8 @@ protected:
 
 	void DisableFeintAttackModifier();
 
+	void AttackDirectionChosen();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -103,5 +107,11 @@ public:
 	FORCEINLINE bool GetIsSwordDrawn() const { return bIsSwordDrawn; }
 
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	void ResetMoveFloats();
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	void FinishedAttacking();
 };

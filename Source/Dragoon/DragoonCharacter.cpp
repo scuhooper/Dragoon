@@ -56,6 +56,7 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAxis("MoveRight", this, &ADragoonCharacter::MoveRight);
 
 	PlayerInputComponent->BindAction( "BasicAttack", IE_Pressed, this, &ADragoonCharacter::BasicAttack );
+	PlayerInputComponent->BindAction( "BasicAttack", IE_Released, this, &ADragoonCharacter::AttackDirectionChosen );
 	PlayerInputComponent->BindAction( "Sheathe/UnsheatheSword", IE_Pressed, this, &ADragoonCharacter::SheatheUnsheatheSword );
 	PlayerInputComponent->BindAction( "StrongAttack", IE_Pressed, this, &ADragoonCharacter::EnableStrongAttackModifier );
 	PlayerInputComponent->BindAction( "StrongAttack", IE_Released, this, &ADragoonCharacter::DisableStrongAttackModifier );
@@ -139,6 +140,9 @@ void ADragoonCharacter::MoveRight(float Value)
 
 void ADragoonCharacter::BasicAttack() {
 	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
+	bIsAttacking = true;
+	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
+	Controller->SetIgnoreMoveInput( true );
 }
 
 void ADragoonCharacter::MyTurn( float Val ) {	
@@ -180,4 +184,13 @@ void ADragoonCharacter::EnableFeintAttackModifier() {
 void ADragoonCharacter::DisableFeintAttackModifier() {
 	bIsFeintAttack = false;
 	UE_LOG( LogTemp, Warning, TEXT( "bIsFeintAttack is %d" ), bIsFeintAttack );
+}
+
+void ADragoonCharacter::AttackDirectionChosen() {
+	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 1 );
+}
+
+void ADragoonCharacter::FinishedAttacking() {
+	bIsAttacking = false;
+	Controller->SetIgnoreMoveInput( false );
 }
