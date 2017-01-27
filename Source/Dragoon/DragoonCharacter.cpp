@@ -68,7 +68,7 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn", this, &ADragoonCharacter::MyTurn);
 	PlayerInputComponent->BindAxis("TurnRate", this, &ADragoonCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &ADragoonCharacter::MyLookUp);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ADragoonCharacter::LookUpAtRate);
 
 	// handle touch devices
@@ -139,12 +139,21 @@ void ADragoonCharacter::MoveRight(float Value)
 }
 
 void ADragoonCharacter::BasicAttack() {
+	if ( bIsGettingAttackDirection || bIsAttacking )
+		return;
+
 	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
 	Controller->SetIgnoreMoveInput( true );
+	bIsGettingAttackDirection = true;
 }
 
-void ADragoonCharacter::MyTurn( float Val ) {	
+void ADragoonCharacter::MyTurn( float Val ) {
+	if ( bIsGettingAttackDirection ) {
+		attackDirection.X += Val;
+		return;
+	}
+
 	AddControllerYawInput( Val );
 	if ( bIsSwordDrawn ) {
 		FRotator directionToFace( 0, GetFollowCamera()->GetComponentRotation().Yaw, 0 );
@@ -152,7 +161,13 @@ void ADragoonCharacter::MyTurn( float Val ) {
 	}
 }
 
-void ADragoonCharacter::MyLookUp() {
+void ADragoonCharacter::MyLookUp( float Rate ) {
+	if ( bIsGettingAttackDirection ) {
+		attackDirection.Y += Rate;
+		return;
+	}
+	
+	AddControllerPitchInput( Rate );
 }
 
 void ADragoonCharacter::SheatheUnsheatheSword() {
@@ -167,30 +182,32 @@ void ADragoonCharacter::ResetMoveFloats() {
 
 void ADragoonCharacter::EnableStrongAttackModifier() {
 	bIsStrongAttack = true;
-	UE_LOG( LogTemp, Warning, TEXT( "bIsStrongAttack is %d" ), bIsStrongAttack );
 }
 
 void ADragoonCharacter::DisableStrongAttackModifier() {
 	bIsStrongAttack = false;
-	UE_LOG( LogTemp, Warning, TEXT( "bIsStrongAttack is %d" ), bIsStrongAttack );
 }
 
 void ADragoonCharacter::EnableFeintAttackModifier() {
 	bIsFeintAttack = true;
-	UE_LOG( LogTemp, Warning, TEXT( "bIsFeintAttack is %d" ), bIsFeintAttack );
 }
 
 void ADragoonCharacter::DisableFeintAttackModifier() {
 	bIsFeintAttack = false;
-	UE_LOG( LogTemp, Warning, TEXT( "bIsFeintAttack is %d" ), bIsFeintAttack );
 }
 
 void ADragoonCharacter::AttackDirectionChosen() {
+	bIsGettingAttackDirection = false;
+	UE_LOG( LogTemp, Warning, TEXT( "attackDirection Vector is %s" ), *this->attackDirection.ToString() );
+	attackDirection.Normalize( .05f );
+	UE_LOG( LogTemp, Warning, TEXT( "attackDirection Vector is %s" ), *this->attackDirection.ToString() );
 	bIsAttacking = true;
+
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 1 );
 }
 
 void ADragoonCharacter::FinishedAttacking() {
 	bIsAttacking = false;
+	attackDirection = FVector2D( 0, 0 );
 	Controller->SetIgnoreMoveInput( false );
 }

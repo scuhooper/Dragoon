@@ -44,6 +44,10 @@ private:
 
 	bool bIsAttacking = false;
 
+	bool bIsGettingAttackDirection = false;
+
+	FVector2D attackDirection;
+
 protected:
 
 	/** Resets HMD orientation in VR. */
@@ -77,7 +81,7 @@ protected:
 
 	void MyTurn( float Val );
 
-	void MyLookUp();
+	void MyLookUp( float Rate );
 
 	void SheatheUnsheatheSword();
 
