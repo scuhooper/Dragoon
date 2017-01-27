@@ -234,10 +234,11 @@ uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
 	else
 		hor = EAttackHorizontal::AH_Center;
 	
+	// UE4 calculates Y inversely. Moving the mouse upward will result in negative y values and vice versa
 	if ( vec.Y > 0.2f )
-		ver = EAttackVertical::AV_Up;
-	else if ( vec.Y < -0.2f )
 		ver = EAttackVertical::AV_Down;
+	else if ( vec.Y < -0.2f )
+		ver = EAttackVertical::AV_Up;
 	else
 		ver = EAttackVertical::AV_Center;
 

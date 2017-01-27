@@ -134,7 +134,7 @@ protected:
 
 	uint8 DetermineAttackDirection( FVector2D vec );
 
-	uint8 directionOfAttack;
+	uint8 directionOfAttack = ( uint8 )EAttackDirection::AD_Thrust;
 
 protected:
 	// APawn interface
