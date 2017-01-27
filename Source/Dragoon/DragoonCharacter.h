@@ -3,6 +3,34 @@
 #include "GameFramework/Character.h"
 #include "DragoonCharacter.generated.h"
 
+UENUM( BlueprintType )
+enum class EAttackDirection : uint8
+{
+	AD_DownwardRightSlash	UMETA( DisplayName == "DownwardRightSlash" ),
+	AD_DownwardSlash		UMETA( DisplayName == "DownwardSlash" ),
+	AD_DownwardLeftSlash	UMETA( DisplayName == "DownwardLeftSlash" ),
+	AD_RightSlash			UMETA( DisplayName == "RightSlash" ),
+	AD_Thrust				UMETA( DisplayName == "Thrust" ),
+	AD_LeftSlash			UMETA( DisplayName == "LeftSlash" ),
+	AD_UpwardRightSlash		UMETA( DisplayName == "UpwardRightSlash" ),
+	AD_UpwardSlash			UMETA( DisplayName == "UpwardSlash" ),
+	AD_UpwardLeftSlash		UMETA( DisplayName == "UpwardLeftSlash" )
+};
+
+enum class EAttackVertical : uint8
+{
+	AV_Up,
+	AV_Center,
+	AV_Down
+};
+
+enum class EAttackHorizontal : uint8
+{
+	AH_Left,
+	AH_Center,
+	AH_Right
+};
+
 UCLASS(config=Game)
 class ADragoonCharacter : public ACharacter
 {
@@ -35,6 +63,14 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = DragoonCharacter )
 	AActor* sword;
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Enum )
+	EAttackDirection AttackDirectrionEnum;
+
+	EAttackVertical AttackVerticalEnum;
+
+	EAttackHorizontal AttackHorizontalEnum;
+
+	uint8 AttackOrientation[ 3 ][ 3 ];
 private:
 	bool bIsSwordDrawn = false;
 
@@ -96,6 +132,10 @@ protected:
 
 	void AttackDirectionChosen();
 
+	uint8 DetermineAttackDirection( FVector2D vec );
+
+	uint8 directionOfAttack;
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -124,4 +164,7 @@ public:
 
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	void FinishedAttacking();
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	FORCEINLINE uint8 GetDirectionOfAttack() const { return directionOfAttack; }
 };

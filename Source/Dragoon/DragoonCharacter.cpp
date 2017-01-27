@@ -40,6 +40,17 @@ ADragoonCharacter::ADragoonCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	// Setup the combat system grid
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Up ][ ( int32 )EAttackHorizontal::AH_Left ] = ( uint8 )EAttackDirection::AD_UpwardLeftSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Up ][ ( int32 )EAttackHorizontal::AH_Center ] = ( uint8 )EAttackDirection::AD_UpwardSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Up ][ ( int32 )EAttackHorizontal::AH_Right ] = ( uint8 )EAttackDirection::AD_UpwardRightSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Center ][ ( int32 )EAttackHorizontal::AH_Left ] = ( uint8 )EAttackDirection::AD_LeftSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Center ][ ( int32 )EAttackHorizontal::AH_Center ] = ( uint8 )EAttackDirection::AD_Thrust;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Center ][ ( int32 )EAttackHorizontal::AH_Right ] = ( uint8 )EAttackDirection::AD_RightSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Left ] = ( uint8 )EAttackDirection::AD_DownwardLeftSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Center ] = ( uint8 )EAttackDirection::AD_DownwardSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Right ] = ( uint8 )EAttackDirection::AD_DownwardRightSlash;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -199,8 +210,9 @@ void ADragoonCharacter::DisableFeintAttackModifier() {
 void ADragoonCharacter::AttackDirectionChosen() {
 	bIsGettingAttackDirection = false;
 	UE_LOG( LogTemp, Warning, TEXT( "attackDirection Vector is %s" ), *this->attackDirection.ToString() );
-	attackDirection.Normalize( .05f );
+	attackDirection.Normalize( .1f );
 	UE_LOG( LogTemp, Warning, TEXT( "attackDirection Vector is %s" ), *this->attackDirection.ToString() );
+	directionOfAttack = DetermineAttackDirection( attackDirection );
 	bIsAttacking = true;
 
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 1 );
@@ -210,4 +222,24 @@ void ADragoonCharacter::FinishedAttacking() {
 	bIsAttacking = false;
 	attackDirection = FVector2D( 0, 0 );
 	Controller->SetIgnoreMoveInput( false );
+}
+
+uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
+	EAttackHorizontal hor;
+	EAttackVertical ver;
+	if ( vec.X > 0.2f )
+		hor = EAttackHorizontal::AH_Right;
+	else if ( vec.X < -0.2f )
+		hor = EAttackHorizontal::AH_Left;
+	else
+		hor = EAttackHorizontal::AH_Center;
+	
+	if ( vec.Y > 0.2f )
+		ver = EAttackVertical::AV_Up;
+	else if ( vec.Y < -0.2f )
+		ver = EAttackVertical::AV_Down;
+	else
+		ver = EAttackVertical::AV_Center;
+
+	return AttackOrientation[ (int32)ver ][ (int32)hor ];
 }
