@@ -153,6 +153,11 @@ void ADragoonCharacter::BasicAttack() {
 	if ( bIsGettingAttackDirection || bIsAttacking )
 		return;
 
+	if ( !bIsSwordDrawn ) {
+		this->SheatheUnsheatheSword();
+		return;
+	}
+
 	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
 	Controller->SetIgnoreMoveInput( true );
@@ -208,6 +213,9 @@ void ADragoonCharacter::DisableFeintAttackModifier() {
 }
 
 void ADragoonCharacter::AttackDirectionChosen() {
+	if ( !bIsGettingAttackDirection )
+		return;
+
 	bIsGettingAttackDirection = false;
 	UE_LOG( LogTemp, Warning, TEXT( "attackDirection Vector is %s" ), *this->attackDirection.ToString() );
 	attackDirection.Normalize( .1f );
