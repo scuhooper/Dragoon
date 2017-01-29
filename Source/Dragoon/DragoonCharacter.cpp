@@ -60,14 +60,16 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction( "Jump/Dodge", IE_Pressed, this, &ADragoonCharacter::EnableDodging );
+	PlayerInputComponent->BindAction( "Jump/Dodge", IE_Released, this, &ADragoonCharacter::DodgeKeyReleased );
 
-	PlayerInputComponent->BindAxis("MoveForward", this, &ADragoonCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ADragoonCharacter::MoveRight);
+	PlayerInputComponent->BindAxis( "MoveForward", this, &ADragoonCharacter::MoveForward );
+	PlayerInputComponent->BindAxis( "MoveRight", this, &ADragoonCharacter::MoveRight );
 
 	PlayerInputComponent->BindAction( "BasicAttack", IE_Pressed, this, &ADragoonCharacter::BasicAttack );
-	PlayerInputComponent->BindAction( "BasicAttack", IE_Released, this, &ADragoonCharacter::AttackDirectionChosen );
+	PlayerInputComponent->BindAction( "BasicAttack", IE_Released, this, &ADragoonCharacter::BeginAttack );
+	PlayerInputComponent->BindAction( "Parry", IE_Pressed, this, &ADragoonCharacter::Parry );
+	PlayerInputComponent->BindAction( "Parry", IE_Released, this, &ADragoonCharacter::BeginParry );
 	PlayerInputComponent->BindAction( "Sheathe/UnsheatheSword", IE_Pressed, this, &ADragoonCharacter::SheatheUnsheatheSword );
 	PlayerInputComponent->BindAction( "StrongAttack", IE_Pressed, this, &ADragoonCharacter::EnableStrongAttackModifier );
 	PlayerInputComponent->BindAction( "StrongAttack", IE_Released, this, &ADragoonCharacter::DisableStrongAttackModifier );
@@ -150,7 +152,7 @@ void ADragoonCharacter::MoveRight(float Value)
 }
 
 void ADragoonCharacter::BasicAttack() {
-	if ( bIsGettingAttackDirection || bIsAttacking )
+	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
 		return;
 
 	if ( !bIsSwordDrawn ) {
@@ -158,10 +160,17 @@ void ADragoonCharacter::BasicAttack() {
 		return;
 	}
 
-	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
 	Controller->SetIgnoreMoveInput( true );
 	bIsGettingAttackDirection = true;
+}
+
+void ADragoonCharacter::BeginAttack() {
+	if ( !bIsGettingAttackDirection )
+		return;
+
+	AttackDirectionChosen();
+	bIsAttacking = true;
 }
 
 void ADragoonCharacter::MyTurn( float Val ) {
@@ -212,22 +221,73 @@ void ADragoonCharacter::DisableFeintAttackModifier() {
 	bIsFeintAttack = false;
 }
 
-void ADragoonCharacter::AttackDirectionChosen() {
+void ADragoonCharacter::EnableDodging() {
+	if ( !bIsSwordDrawn ) {
+		Jump();
+		return;
+	}
+
+	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+		return;
+
+	bDodgeHeld = true;
+
+	if ( moveForward == 0 && moveRight == 0 )
+		return;
+
+	bIsDodging = true;
+}
+
+void ADragoonCharacter::DodgeKeyReleased() {
+	if ( !bIsSwordDrawn ) {
+		StopJumping();
+		return;
+	}
+
+	bDodgeHeld = false;
+}
+
+void ADragoonCharacter::Parry() {
+	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+		return;
+
+	if ( !bIsSwordDrawn ) {
+		this->SheatheUnsheatheSword();
+		return;
+	}
+
+	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
+	Controller->SetIgnoreMoveInput( true );
+	bIsGettingAttackDirection = true;
+}
+
+void ADragoonCharacter::BeginParry() {
 	if ( !bIsGettingAttackDirection )
 		return;
 
-	bIsGettingAttackDirection = false;
-	UE_LOG( LogTemp, Warning, TEXT( "attackDirection Vector is %s" ), *this->attackDirection.ToString() );
-	attackDirection.Normalize( .1f );
-	UE_LOG( LogTemp, Warning, TEXT( "attackDirection Vector is %s" ), *this->attackDirection.ToString() );
-	directionOfAttack = DetermineAttackDirection( attackDirection );
-	bIsAttacking = true;
+	AttackDirectionChosen();
+	bIsParrying = true;
+}
 
+void ADragoonCharacter::AttackDirectionChosen() {
+	bIsGettingAttackDirection = false;
+	attackDirection.Normalize( .1f );
+	directionOfAttack = DetermineAttackDirection( attackDirection );
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 1 );
 }
 
 void ADragoonCharacter::FinishedAttacking() {
 	bIsAttacking = false;
+	attackDirection = FVector2D( 0, 0 );
+	Controller->SetIgnoreMoveInput( false );
+}
+
+void ADragoonCharacter::FinishedDodging() {
+	bIsDodging = false;
+}
+
+void ADragoonCharacter::FinishedParrying() {
+	bIsParrying = false;
 	attackDirection = FVector2D( 0, 0 );
 	Controller->SetIgnoreMoveInput( false );
 }

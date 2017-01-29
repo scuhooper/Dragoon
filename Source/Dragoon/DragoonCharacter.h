@@ -86,6 +86,8 @@ private:
 
 	bool bIsDodging = false;
 
+	bool bDodgeHeld = false;
+
 	FVector2D attackDirection;
 
 protected:
@@ -119,6 +121,8 @@ protected:
 
 	void BasicAttack();
 
+	void BeginAttack();
+
 	void MyTurn( float Val );
 
 	void MyLookUp( float Rate );
@@ -133,6 +137,14 @@ protected:
 	void EnableFeintAttackModifier();
 
 	void DisableFeintAttackModifier();
+
+	void EnableDodging();
+
+	void DodgeKeyReleased();
+
+	void Parry();
+
+	void BeginParry();
 
 	void AttackDirectionChosen();
 
@@ -170,5 +182,17 @@ public:
 	void FinishedAttacking();
 
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	void FinishedDodging();
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	void FinishedParrying();
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	FORCEINLINE uint8 GetDirectionOfAttack() const { return directionOfAttack; }
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	FORCEINLINE bool GetIsParrying() const { return bIsParrying; }
+
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	FORCEINLINE bool GetIsDodging() const { return bIsDodging; }
 };
