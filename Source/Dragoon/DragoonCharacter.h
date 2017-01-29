@@ -82,6 +82,10 @@ private:
 
 	bool bIsGettingAttackDirection = false;
 
+	bool bIsParrying = false;
+
+	bool bIsDodging = false;
+
 	FVector2D attackDirection;
 
 protected:
