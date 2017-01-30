@@ -86,8 +86,6 @@ private:
 
 	bool bIsDodging = false;
 
-	bool bDodgeHeld = false;
-
 	FVector2D attackDirection;
 
 protected:

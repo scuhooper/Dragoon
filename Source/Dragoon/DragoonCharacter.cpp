@@ -230,12 +230,8 @@ void ADragoonCharacter::EnableDodging() {
 	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
 		return;
 
-	bDodgeHeld = true;
-
-	if ( moveForward == 0 && moveRight == 0 )
-		return;
-
 	bIsDodging = true;
+	Controller->SetIgnoreMoveInput( true );
 }
 
 void ADragoonCharacter::DodgeKeyReleased() {
@@ -243,8 +239,6 @@ void ADragoonCharacter::DodgeKeyReleased() {
 		StopJumping();
 		return;
 	}
-
-	bDodgeHeld = false;
 }
 
 void ADragoonCharacter::Parry() {
@@ -284,6 +278,7 @@ void ADragoonCharacter::FinishedAttacking() {
 
 void ADragoonCharacter::FinishedDodging() {
 	bIsDodging = false;
+	Controller->SetIgnoreMoveInput( false );
 }
 
 void ADragoonCharacter::FinishedParrying() {
