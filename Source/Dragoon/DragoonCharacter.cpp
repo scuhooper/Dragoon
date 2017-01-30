@@ -40,6 +40,17 @@ ADragoonCharacter::ADragoonCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	// Setup the combat system grid
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Up ][ ( int32 )EAttackHorizontal::AH_Left ] = ( uint8 )EAttackDirection::AD_UpwardLeftSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Up ][ ( int32 )EAttackHorizontal::AH_Center ] = ( uint8 )EAttackDirection::AD_UpwardSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Up ][ ( int32 )EAttackHorizontal::AH_Right ] = ( uint8 )EAttackDirection::AD_UpwardRightSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Center ][ ( int32 )EAttackHorizontal::AH_Left ] = ( uint8 )EAttackDirection::AD_LeftSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Center ][ ( int32 )EAttackHorizontal::AH_Center ] = ( uint8 )EAttackDirection::AD_Thrust;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Center ][ ( int32 )EAttackHorizontal::AH_Right ] = ( uint8 )EAttackDirection::AD_RightSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Left ] = ( uint8 )EAttackDirection::AD_DownwardLeftSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Center ] = ( uint8 )EAttackDirection::AD_DownwardSlash;
+	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Right ] = ( uint8 )EAttackDirection::AD_DownwardRightSlash;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -49,20 +60,28 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction( "Jump/Dodge", IE_Pressed, this, &ADragoonCharacter::EnableDodging );
+	PlayerInputComponent->BindAction( "Jump/Dodge", IE_Released, this, &ADragoonCharacter::DodgeKeyReleased );
 
-	PlayerInputComponent->BindAxis("MoveForward", this, &ADragoonCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ADragoonCharacter::MoveRight);
+	PlayerInputComponent->BindAxis( "MoveForward", this, &ADragoonCharacter::MoveForward );
+	PlayerInputComponent->BindAxis( "MoveRight", this, &ADragoonCharacter::MoveRight );
 
 	PlayerInputComponent->BindAction( "BasicAttack", IE_Pressed, this, &ADragoonCharacter::BasicAttack );
+	PlayerInputComponent->BindAction( "BasicAttack", IE_Released, this, &ADragoonCharacter::BeginAttack );
+	PlayerInputComponent->BindAction( "Parry", IE_Pressed, this, &ADragoonCharacter::Parry );
+	PlayerInputComponent->BindAction( "Parry", IE_Released, this, &ADragoonCharacter::BeginParry );
+	PlayerInputComponent->BindAction( "Sheathe/UnsheatheSword", IE_Pressed, this, &ADragoonCharacter::SheatheUnsheatheSword );
+	PlayerInputComponent->BindAction( "StrongAttack", IE_Pressed, this, &ADragoonCharacter::EnableStrongAttackModifier );
+	PlayerInputComponent->BindAction( "StrongAttack", IE_Released, this, &ADragoonCharacter::DisableStrongAttackModifier );
+	PlayerInputComponent->BindAction( "FeintAttack", IE_Pressed, this, &ADragoonCharacter::EnableFeintAttackModifier );
+	PlayerInputComponent->BindAction( "FeintAttack", IE_Released, this, &ADragoonCharacter::DisableFeintAttackModifier );
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("Turn", this, &ADragoonCharacter::MyTurn);
 	PlayerInputComponent->BindAxis("TurnRate", this, &ADragoonCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &ADragoonCharacter::MyLookUp);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ADragoonCharacter::LookUpAtRate);
 
 	// handle touch devices
@@ -112,6 +131,7 @@ void ADragoonCharacter::MoveForward(float Value)
 		// get forward vector
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
+		moveForward = Value;
 	}
 }
 
@@ -127,9 +147,163 @@ void ADragoonCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
+		moveRight = Value;
 	}
 }
 
 void ADragoonCharacter::BasicAttack() {
-	UE_LOG( LogTemp, Warning, TEXT( "Basic Attack!" ) );
+	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+		return;
+
+	if ( !bIsSwordDrawn ) {
+		this->SheatheUnsheatheSword();
+		return;
+	}
+
+	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
+	Controller->SetIgnoreMoveInput( true );
+	bIsGettingAttackDirection = true;
+}
+
+void ADragoonCharacter::BeginAttack() {
+	if ( !bIsGettingAttackDirection )
+		return;
+
+	AttackDirectionChosen();
+	bIsAttacking = true;
+}
+
+void ADragoonCharacter::MyTurn( float Val ) {
+	if ( bIsGettingAttackDirection ) {
+		attackDirection.X += Val;
+		return;
+	}
+
+	AddControllerYawInput( Val );
+	if ( bIsSwordDrawn ) {
+		FRotator directionToFace( 0, GetFollowCamera()->GetComponentRotation().Yaw, 0 );
+		this->SetActorRotation( directionToFace );
+	}
+}
+
+void ADragoonCharacter::MyLookUp( float Rate ) {
+	if ( bIsGettingAttackDirection ) {
+		attackDirection.Y += Rate;
+		return;
+	}
+	
+	AddControllerPitchInput( Rate );
+}
+
+void ADragoonCharacter::SheatheUnsheatheSword() {
+	bIsSwordDrawn = !bIsSwordDrawn;	// set is sword drawn to opposite
+	this->GetCharacterMovement()->bOrientRotationToMovement = !( this->GetCharacterMovement()->bOrientRotationToMovement );
+}
+
+void ADragoonCharacter::ResetMoveFloats() {
+	moveForward = 0;
+	moveRight = 0;
+}
+
+void ADragoonCharacter::EnableStrongAttackModifier() {
+	bIsStrongAttack = true;
+}
+
+void ADragoonCharacter::DisableStrongAttackModifier() {
+	bIsStrongAttack = false;
+}
+
+void ADragoonCharacter::EnableFeintAttackModifier() {
+	bIsFeintAttack = true;
+}
+
+void ADragoonCharacter::DisableFeintAttackModifier() {
+	bIsFeintAttack = false;
+}
+
+void ADragoonCharacter::EnableDodging() {
+	if ( !bIsSwordDrawn ) {
+		Jump();
+		return;
+	}
+
+	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+		return;
+
+	bIsDodging = true;
+	Controller->SetIgnoreMoveInput( true );
+}
+
+void ADragoonCharacter::DodgeKeyReleased() {
+	if ( !bIsSwordDrawn ) {
+		StopJumping();
+		return;
+	}
+}
+
+void ADragoonCharacter::Parry() {
+	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+		return;
+
+	if ( !bIsSwordDrawn ) {
+		this->SheatheUnsheatheSword();
+		return;
+	}
+
+	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
+	Controller->SetIgnoreMoveInput( true );
+	bIsGettingAttackDirection = true;
+}
+
+void ADragoonCharacter::BeginParry() {
+	if ( !bIsGettingAttackDirection )
+		return;
+
+	AttackDirectionChosen();
+	bIsParrying = true;
+}
+
+void ADragoonCharacter::AttackDirectionChosen() {
+	bIsGettingAttackDirection = false;
+	attackDirection.Normalize( .1f );
+	directionOfAttack = DetermineAttackDirection( attackDirection );
+	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 1 );
+}
+
+void ADragoonCharacter::FinishedAttacking() {
+	bIsAttacking = false;
+	attackDirection = FVector2D( 0, 0 );
+	Controller->SetIgnoreMoveInput( false );
+}
+
+void ADragoonCharacter::FinishedDodging() {
+	bIsDodging = false;
+	Controller->SetIgnoreMoveInput( false );
+}
+
+void ADragoonCharacter::FinishedParrying() {
+	bIsParrying = false;
+	attackDirection = FVector2D( 0, 0 );
+	Controller->SetIgnoreMoveInput( false );
+}
+
+uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
+	EAttackHorizontal hor;
+	EAttackVertical ver;
+	if ( vec.X > 0.2f )
+		hor = EAttackHorizontal::AH_Right;
+	else if ( vec.X < -0.2f )
+		hor = EAttackHorizontal::AH_Left;
+	else
+		hor = EAttackHorizontal::AH_Center;
+	
+	// UE4 calculates Y inversely. Moving the mouse upward will result in negative y values and vice versa
+	if ( vec.Y > 0.2f )
+		ver = EAttackVertical::AV_Down;
+	else if ( vec.Y < -0.2f )
+		ver = EAttackVertical::AV_Up;
+	else
+		ver = EAttackVertical::AV_Center;
+
+	return AttackOrientation[ (int32)ver ][ (int32)hor ];
 }
