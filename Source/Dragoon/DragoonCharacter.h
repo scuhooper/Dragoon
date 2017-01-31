@@ -6,6 +6,7 @@
 UENUM( BlueprintType )
 enum class EAttackDirection : uint8
 {
+	// enum for particular attack direction based off of attack grid
 	AD_DownwardRightSlash	UMETA( DisplayName == "DownwardRightSlash" ),
 	AD_DownwardSlash		UMETA( DisplayName == "DownwardSlash" ),
 	AD_DownwardLeftSlash	UMETA( DisplayName == "DownwardLeftSlash" ),
@@ -19,6 +20,7 @@ enum class EAttackDirection : uint8
 
 enum class EAttackVertical : uint8
 {
+	// enum to store whether the attack should go upwards, downwards, or through the middle
 	AV_Up,
 	AV_Center,
 	AV_Down
@@ -26,6 +28,7 @@ enum class EAttackVertical : uint8
 
 enum class EAttackHorizontal : uint8
 {
+	// enum to store whether the attack should go towards the left, right, or center
 	AH_Left,
 	AH_Center,
 	AH_Right
@@ -43,6 +46,7 @@ class ADragoonCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
 public:
 	ADragoonCharacter();
 
@@ -54,38 +58,43 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 
+	// float to hold movement speed in x direction for animation blueprint while sword is drawn
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Movement )
 	float moveForward = 0;
 
+	// float to hold movement speed in y direction for animation blueprint while sword is drawn
 	UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = Movement )
 	float moveRight = 0;
 
+	// reference for attaching sword in derived BP class
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = DragoonCharacter )
 	AActor* sword;
 
+	// variable of attack direction enum so it can be accessed in blueprints
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Enum )
 	EAttackDirection AttackDirectrionEnum;
 
+	// enums for storing x and y components of mouse movement when deciding which attack/parry to use
 	EAttackVertical AttackVerticalEnum;
-
 	EAttackHorizontal AttackHorizontalEnum;
 
+	// 2D array for storing y and x components of attack direction, respectively
 	uint8 AttackOrientation[ 3 ][ 3 ];
+
+	// stores which direction was chosen from the AttackOrientation array
+	uint8 directionOfAttack = ( uint8 )EAttackDirection::AD_Thrust;
+
 private:
+	/// character state booleans
 	bool bIsSwordDrawn = false;
-
 	bool bIsStrongAttack = false;
-
 	bool bIsFeintAttack = false;
-
 	bool bIsAttacking = false;
-
 	bool bIsGettingAttackDirection = false;
-
 	bool bIsParrying = false;
-
 	bool bIsDodging = false;
 
+	// 2D Vector to store the mouse movement for choosing an attack/parry's direction
 	FVector2D attackDirection;
 
 protected:
@@ -117,38 +126,100 @@ protected:
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
+	/** 
+	 * Handler for attack button pressed.
+	 * Sets slow-motion effect, disables movement input, and toggles getting attack direction input
+	 */
 	void BasicAttack();
 
+	/**
+	 * Handler for attack button released
+	 * Sets the final attack direction and toggles on IsAttacking
+	 */
 	void BeginAttack();
 
+	/**
+	* Called via input to turn at a given rate. Sets attack direction X component if attack or parry button is pressed.
+	* If sword is drawn, it adjusts the character's rotation to match that of the camera. This results in the character looking at where the camera is pointed.
+	* @param Val	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
+	*/
 	void MyTurn( float Val );
 
+	/**
+	* Called via input to turn look up/down at a given rate. Sets attack direction Y component if attack or parry button is pressed.
+	* @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
+	*/
 	void MyLookUp( float Rate );
 
+	/**
+	 * Toggles SwordDrawn and whether to orient roation to movement direction
+	 */
 	void SheatheUnsheatheSword();
 
-	// Attack modifier functions
+	/**
+	 * Handler for StrongAttack button pressed. 
+	 * Sets bIsStrongAttack to true
+	 */
 	void EnableStrongAttackModifier();
 
+	/**
+	* Handler for StrongAttack button released.
+	* Sets bIsStrongAttack to false
+	*/
 	void DisableStrongAttackModifier();
 
+	/**
+	* Handler for FeintAttack button pressed.
+	* Sets bIsFeintAttack to true
+	*/
 	void EnableFeintAttackModifier();
 
+	/**
+	* Handler for FeintAttack button released.
+	* Sets bIsFeintAttack to true
+	*/
 	void DisableFeintAttackModifier();
 
+	/**
+	* Handler for Jump/Dodge button pressed.
+	* Calls Jump if sword is not drawn.
+	* If sword is drawn, sets bIsDodging to true and disables movement input.
+	*/
 	void EnableDodging();
 
+	/**
+	* Handler for Jump/Dodge button released.
+	* Calls StopJumping if sword is not drawn.
+	*/
 	void DodgeKeyReleased();
 
+	/**
+	* Handler for Parry button pressed.
+	* Equips sword if sword is not currently equipped.
+	* Sets slow-motion effect, stops movement input, and toggles get attack direction on.
+	*/
 	void Parry();
 
+	/**
+	* Handler for Parry button released.
+	* Submits mouse movement to be turned into a 2D vector. Sets IsParrying to true.
+	*/
 	void BeginParry();
 
+	/**
+	 * Toggles off the bool for getting attack direction.
+	 * Normalizes the 2D vector gotten for attack direction or sets it to zero.
+	 * Call DetermineAttackDirection with the normalized 2D vector.
+	 * Turns slow-motion effect off.
+	 */
 	void AttackDirectionChosen();
 
+	/**
+	 * Converts X and Y value of vec to their respective enum equivalents.
+	 * &Param vec	2D Vector that has been normalized to lie within a unit circle
+	 * &Return		Value from AttackOrientation array which corresponds to Y and X components of vec
+	 */
 	uint8 DetermineAttackDirection( FVector2D vec );
-
-	uint8 directionOfAttack = ( uint8 )EAttackDirection::AD_Thrust;
 
 protected:
 	// APawn interface
@@ -160,37 +231,53 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
+	/** Returns bIsSwordDrawn **/
 	UFUNCTION( BlueprintCallable, Category=DragoonPlayer )
 	FORCEINLINE bool GetIsSwordDrawn() const { return bIsSwordDrawn; }
-
+	/** Returns bIsAttacking **/
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
-
+	/** Returns bIsStrongAttack **/
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	FORCEINLINE bool GetIsStrongAttacking() const { return bIsStrongAttack; }
-
+	/** Returns bIsFeintAttack **/
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	FORCEINLINE bool GetIsFeintAttacking() const { return bIsFeintAttack; }
+	/** Returns directionOfAttack **/
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	FORCEINLINE uint8 GetDirectionOfAttack() const { return directionOfAttack; }
+	/** Returns bIsParrying **/
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	FORCEINLINE bool GetIsParrying() const { return bIsParrying; }
+	/** Returns bIsDodging **/
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	FORCEINLINE bool GetIsDodging() const { return bIsDodging; }
 
+	/**
+	 * Resets moveForward and moveRight to 0.
+	 */
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	void ResetMoveFloats();
 
+	/**
+	 * Sets IsAttacking to false.
+	 * Resets attackDirection vector to zero.
+	 * Enables movement input.
+	 */
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	void FinishedAttacking();
 
+	/**
+	 * Sets IsDodging to false.
+	 * Enables movement input
+	 */
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	void FinishedDodging();
 
+	/**  
+	 * Sets IsParrying to false.
+	 * Enables movement input.
+	 */
 	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	void FinishedParrying();
-
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
-	FORCEINLINE uint8 GetDirectionOfAttack() const { return directionOfAttack; }
-
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
-	FORCEINLINE bool GetIsParrying() const { return bIsParrying; }
-
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
-	FORCEINLINE bool GetIsDodging() const { return bIsDodging; }
 };
