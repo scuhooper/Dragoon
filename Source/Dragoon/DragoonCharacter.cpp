@@ -51,6 +51,9 @@ ADragoonCharacter::ADragoonCharacter()
 	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Left ] = ( uint8 )EAttackDirection::AD_DownwardLeftSlash;
 	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Center ] = ( uint8 )EAttackDirection::AD_DownwardSlash;
 	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Right ] = ( uint8 )EAttackDirection::AD_DownwardRightSlash;
+
+	// Set health to equal MaxHealth
+	health = maxHealth;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -318,4 +321,23 @@ uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
 
 	// return the corresponding entry from array
 	return AttackOrientation[ (int32)ver ][ (int32)hor ];
+}
+
+void ADragoonCharacter::TakeDamage( int Val ) {
+	health -= Val;
+	Controller->SetIgnoreMoveInput( true );
+
+	if ( health <= 0 )
+		Dead();
+	else
+		bIsHurt = true;
+}
+
+void ADragoonCharacter::Dead() {
+	bIsDead = true;
+}
+
+void ADragoonCharacter::RecoveredFromHit() {
+	Controller->SetIgnoreMoveInput( false );
+	bIsHurt = false;
 }

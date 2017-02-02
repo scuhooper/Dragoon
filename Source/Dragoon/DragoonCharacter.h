@@ -84,6 +84,9 @@ public:
 	// stores which direction was chosen from the AttackOrientation array
 	uint8 directionOfAttack = ( uint8 )EAttackDirection::AD_Thrust;
 
+	// no property because UPROPERTY does not support const
+	const int maxHealth = 100;
+
 private:
 	/// character state booleans
 	bool bIsSwordDrawn = false;
@@ -93,9 +96,13 @@ private:
 	bool bIsGettingAttackDirection = false;
 	bool bIsParrying = false;
 	bool bIsDodging = false;
+	bool bIsHurt = false;
+	bool bIsDead = false;
 
 	// 2D Vector to store the mouse movement for choosing an attack/parry's direction
 	FVector2D attackDirection;
+
+	int health;
 
 protected:
 
@@ -232,26 +239,32 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	/** Returns bIsSwordDrawn **/
-	UFUNCTION( BlueprintCallable, Category=DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
 	FORCEINLINE bool GetIsSwordDrawn() const { return bIsSwordDrawn; }
 	/** Returns bIsAttacking **/
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = Combat )
 	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
 	/** Returns bIsStrongAttack **/
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = Combat )
 	FORCEINLINE bool GetIsStrongAttacking() const { return bIsStrongAttack; }
 	/** Returns bIsFeintAttack **/
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = Combat )
 	FORCEINLINE bool GetIsFeintAttacking() const { return bIsFeintAttack; }
 	/** Returns directionOfAttack **/
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = Combat )
 	FORCEINLINE uint8 GetDirectionOfAttack() const { return directionOfAttack; }
 	/** Returns bIsParrying **/
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = Combat )
 	FORCEINLINE bool GetIsParrying() const { return bIsParrying; }
 	/** Returns bIsDodging **/
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = Combat )
 	FORCEINLINE bool GetIsDodging() const { return bIsDodging; }
+	/** Returns bIsHurt **/
+	UFUNCTION( BlueprintCallable, Category = Combat )
+	FORCEINLINE bool GetIsHurt() const { return bIsHurt; }
+	/** Returns bIsDead **/
+	UFUNCTION( BlueprintCallable, Category = Combat )
+	FORCEINLINE bool GetIsDead() const { return bIsDead; }
 
 	/**
 	 * Resets moveForward and moveRight to 0.
@@ -264,20 +277,40 @@ public:
 	 * Resets attackDirection vector to zero.
 	 * Enables movement input.
 	 */
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = Combat )
 	void FinishedAttacking();
 
 	/**
 	 * Sets IsDodging to false.
 	 * Enables movement input
 	 */
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = Combat )
 	void FinishedDodging();
 
 	/**  
 	 * Sets IsParrying to false.
 	 * Enables movement input.
 	 */
-	UFUNCTION( BlueprintCallable, Category = DragoonPlayer )
+	UFUNCTION( BlueprintCallable, Category = Combat )
 	void FinishedParrying();
+
+	/**
+	 * Subtracts Val from character's health.
+	 * Disables movement input.
+	 * Will check to see if character has died and will call Dead().
+	 */
+	UFUNCTION( BlueprintCallable, Category = Combat )
+	void TakeDamage( int Val );
+
+	/**
+	 * Sets bIsDead to true.
+	 */
+	UFUNCTION( BlueprintCallable, Category = Combat )
+	void Dead();
+
+	/**
+	 * Enables movement input and sets bIsHurt to false.
+	 */
+	UFUNCTION( BlueprintCallable, Category = Combat )
+	void RecoveredFromHit();
 };
