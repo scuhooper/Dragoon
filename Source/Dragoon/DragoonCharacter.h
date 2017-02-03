@@ -84,8 +84,20 @@ public:
 	// stores which direction was chosen from the AttackOrientation array
 	uint8 directionOfAttack = ( uint8 )EAttackDirection::AD_Thrust;
 
+	// used to store the direction from which the character is hit
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Combat )
+	EAttackDirection hitDirection;
+
 	// no property because UPROPERTY does not support const
 	const int maxHealth = 100;
+
+	// how much damage character does
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Combat )
+	int damage;
+
+	// damage multiplier for StrongAttack
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Combat )
+	float strongAttackDamageMultiplier;
 
 private:
 	/// character state booleans
@@ -165,27 +177,15 @@ protected:
 
 	/**
 	 * Handler for StrongAttack button pressed. 
-	 * Sets bIsStrongAttack to true
+	 * Sets bIsStrongAttack to true and calls BasicAttack
 	 */
-	void EnableStrongAttackModifier();
-
-	/**
-	* Handler for StrongAttack button released.
-	* Sets bIsStrongAttack to false
-	*/
-	void DisableStrongAttackModifier();
+	void StrongAttack();
 
 	/**
 	* Handler for FeintAttack button pressed.
-	* Sets bIsFeintAttack to true
+	* Sets bIsFeintAttack to true and calls BasicAttack
 	*/
-	void EnableFeintAttackModifier();
-
-	/**
-	* Handler for FeintAttack button released.
-	* Sets bIsFeintAttack to true
-	*/
-	void DisableFeintAttackModifier();
+	void FeintAttack();
 
 	/**
 	* Handler for Jump/Dodge button pressed.

@@ -74,10 +74,8 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAction( "Parry", IE_Pressed, this, &ADragoonCharacter::Parry );
 	PlayerInputComponent->BindAction( "Parry", IE_Released, this, &ADragoonCharacter::BeginParry );
 	PlayerInputComponent->BindAction( "Sheathe/UnsheatheSword", IE_Pressed, this, &ADragoonCharacter::SheatheUnsheatheSword );
-	PlayerInputComponent->BindAction( "StrongAttack", IE_Pressed, this, &ADragoonCharacter::EnableStrongAttackModifier );
-	PlayerInputComponent->BindAction( "StrongAttack", IE_Released, this, &ADragoonCharacter::DisableStrongAttackModifier );
-	PlayerInputComponent->BindAction( "FeintAttack", IE_Pressed, this, &ADragoonCharacter::EnableFeintAttackModifier );
-	PlayerInputComponent->BindAction( "FeintAttack", IE_Released, this, &ADragoonCharacter::DisableFeintAttackModifier );
+	PlayerInputComponent->BindAction( "StrongAttack", IE_Pressed, this, &ADragoonCharacter::StrongAttack );
+	PlayerInputComponent->BindAction( "FeintAttack", IE_Pressed, this, &ADragoonCharacter::FeintAttack );
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -208,20 +206,14 @@ void ADragoonCharacter::ResetMoveFloats() {
 	moveRight = 0;
 }
 
-void ADragoonCharacter::EnableStrongAttackModifier() {
+void ADragoonCharacter::StrongAttack() {
 	bIsStrongAttack = true;
+	BasicAttack();
 }
 
-void ADragoonCharacter::DisableStrongAttackModifier() {
-	bIsStrongAttack = false;
-}
-
-void ADragoonCharacter::EnableFeintAttackModifier() {
+void ADragoonCharacter::FeintAttack() {
 	bIsFeintAttack = true;
-}
-
-void ADragoonCharacter::DisableFeintAttackModifier() {
-	bIsFeintAttack = false;
+	BasicAttack();
 }
 
 void ADragoonCharacter::EnableDodging() {
@@ -281,7 +273,9 @@ void ADragoonCharacter::AttackDirectionChosen() {
 }
 
 void ADragoonCharacter::FinishedAttacking() {
-	bIsAttacking = false;	// set animBP bool to false
+	bIsAttacking = false;	// set animBPs bool to false
+	bIsStrongAttack = false;
+	bIsFeintAttack = false;
 	attackDirection = FVector2D( 0, 0 );	// reset attack direction vector
 	Controller->SetIgnoreMoveInput( false );	// enable movement input
 }
@@ -324,6 +318,9 @@ uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
 }
 
 void ADragoonCharacter::TakeDamage( int Val ) {
+	if ( bIsHurt )
+		return;
+
 	health -= Val;
 	Controller->SetIgnoreMoveInput( true );
 
