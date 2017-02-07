@@ -110,6 +110,7 @@ private:
 	bool bIsDodging = false;
 	bool bIsHurt = false;
 	bool bIsDead = false;
+	bool bIsRecovering = false;
 
 	// 2D Vector to store the mouse movement for choosing an attack/parry's direction
 	FVector2D attackDirection;
@@ -228,6 +229,11 @@ protected:
 	 */
 	uint8 DetermineAttackDirection( FVector2D vec );
 
+	/**
+	 * Checks state booleans and returns true if any are true.
+	 */
+	bool IsActionInProgress();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -265,6 +271,9 @@ public:
 	/** Returns bIsDead **/
 	UFUNCTION( BlueprintCallable, Category = Combat )
 	FORCEINLINE bool GetIsDead() const { return bIsDead; }
+	/** Returns bIsRecovering **/
+	UFUNCTION( BlueprintCallable, Category = Combat )
+	FORCEINLINE bool GetIsRecovering() const { return bIsRecovering; }
 
 	/**
 	 * Resets moveForward and moveRight to 0.
@@ -313,4 +322,16 @@ public:
 	 */
 	UFUNCTION( BlueprintCallable, Category = Combat )
 	void RecoveredFromHit();
+
+	/**
+	 * Enables movement input and sets bIsRecovering to false;
+	 */
+	UFUNCTION( BlueprintCallable, Category = Combat )
+	void FinishedRecovering();
+
+	/**
+	 * Calls FinishedAttacking to leave attacking states, disables movement, and sets was parried to true
+	 */
+	UFUNCTION( BlueprintCallable, Category = Combat )
+	void AttackWasParried();
 };

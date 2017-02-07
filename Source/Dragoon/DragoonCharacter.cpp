@@ -153,7 +153,7 @@ void ADragoonCharacter::MoveRight(float Value)
 }
 
 void ADragoonCharacter::BasicAttack() {
-	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )	// check for other actions currently happening
+	if ( IsActionInProgress() )	// check for other actions currently happening
 		return;
 
 	// draw sword if not currently drawn
@@ -224,7 +224,7 @@ void ADragoonCharacter::EnableDodging() {
 	}
 
 	// check for other actions occurring
-	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+	if ( IsActionInProgress() )
 		return;
 
 	// set animBP bool and turn off movement input
@@ -242,7 +242,7 @@ void ADragoonCharacter::DodgeKeyReleased() {
 
 void ADragoonCharacter::Parry() {
 	// check for other actions occurring
-	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+	if ( IsActionInProgress() )
 		return;
 
 	// draw sword if it is not out already
@@ -317,6 +317,13 @@ uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
 	return AttackOrientation[ (int32)ver ][ (int32)hor ];
 }
 
+bool ADragoonCharacter::IsActionInProgress() {
+	if ( bIsAttacking || bIsDodging || bIsDead || bIsHurt || bIsRecovering || bIsGettingAttackDirection || bIsParrying )
+		return true;
+	else
+		return false;
+}
+
 void ADragoonCharacter::TakeDamage( int Val ) {
 	if ( bIsHurt )
 		return;
@@ -337,4 +344,15 @@ void ADragoonCharacter::Dead() {
 void ADragoonCharacter::RecoveredFromHit() {
 	Controller->SetIgnoreMoveInput( false );
 	bIsHurt = false;
+}
+
+void ADragoonCharacter::FinishedRecovering() {
+	Controller->SetIgnoreMoveInput( false );
+	bIsRecovering = false;
+}
+
+void ADragoonCharacter::AttackWasParried() {
+	this->FinishedAttacking();
+	Controller->SetIgnoreMoveInput( true );
+	bIsRecovering = true;
 }
