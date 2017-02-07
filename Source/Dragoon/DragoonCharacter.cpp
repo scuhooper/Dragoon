@@ -51,6 +51,9 @@ ADragoonCharacter::ADragoonCharacter()
 	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Left ] = ( uint8 )EAttackDirection::AD_DownwardLeftSlash;
 	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Center ] = ( uint8 )EAttackDirection::AD_DownwardSlash;
 	AttackOrientation[ ( int32 )EAttackVertical::AV_Down ][ ( int32 )EAttackHorizontal::AH_Right ] = ( uint8 )EAttackDirection::AD_DownwardRightSlash;
+
+	// Set health to equal MaxHealth
+	health = maxHealth;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -71,10 +74,8 @@ void ADragoonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAction( "Parry", IE_Pressed, this, &ADragoonCharacter::Parry );
 	PlayerInputComponent->BindAction( "Parry", IE_Released, this, &ADragoonCharacter::BeginParry );
 	PlayerInputComponent->BindAction( "Sheathe/UnsheatheSword", IE_Pressed, this, &ADragoonCharacter::SheatheUnsheatheSword );
-	PlayerInputComponent->BindAction( "StrongAttack", IE_Pressed, this, &ADragoonCharacter::EnableStrongAttackModifier );
-	PlayerInputComponent->BindAction( "StrongAttack", IE_Released, this, &ADragoonCharacter::DisableStrongAttackModifier );
-	PlayerInputComponent->BindAction( "FeintAttack", IE_Pressed, this, &ADragoonCharacter::EnableFeintAttackModifier );
-	PlayerInputComponent->BindAction( "FeintAttack", IE_Released, this, &ADragoonCharacter::DisableFeintAttackModifier );
+	PlayerInputComponent->BindAction( "StrongAttack", IE_Pressed, this, &ADragoonCharacter::StrongAttack );
+	PlayerInputComponent->BindAction( "FeintAttack", IE_Pressed, this, &ADragoonCharacter::FeintAttack );
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -131,7 +132,7 @@ void ADragoonCharacter::MoveForward(float Value)
 		// get forward vector
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
-		moveForward = Value;
+		moveForward = Value;	// set float to equal value moved for use in animation BP when sword is drawn
 	}
 }
 
@@ -147,57 +148,57 @@ void ADragoonCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
-		moveRight = Value;
+		moveRight = Value;	// set float to equal value moved for use in animation BP when sword is drawn
 	}
 }
 
 void ADragoonCharacter::BasicAttack() {
-	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+	if ( IsActionInProgress() )	// check for other actions currently happening
 		return;
 
+	// draw sword if not currently drawn
 	if ( !bIsSwordDrawn ) {
 		this->SheatheUnsheatheSword();
 		return;
 	}
 
-	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
-	Controller->SetIgnoreMoveInput( true );
-	bIsGettingAttackDirection = true;
+	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );	// sets slow-mo effect
+	Controller->SetIgnoreMoveInput( true );	// stop getting move input
+	bIsGettingAttackDirection = true;	// used to stop controlling camera and instead make the attack direction vector
 }
 
 void ADragoonCharacter::BeginAttack() {
-	if ( !bIsGettingAttackDirection )
+	if ( !bIsGettingAttackDirection )	// if we failed to get attack direction, exit
 		return;
 
-	AttackDirectionChosen();
-	bIsAttacking = true;
+	AttackDirectionChosen();	// get the actual vector for attack direction
+	bIsAttacking = true;	// set attacking to true for animBP
 }
 
 void ADragoonCharacter::MyTurn( float Val ) {
+	// if we are determing attack direction
 	if ( bIsGettingAttackDirection ) {
-		attackDirection.X += Val;
+		attackDirection.X += Val;	// add X movement of mouse to vector
 		return;
 	}
 
-	AddControllerYawInput( Val );
-	if ( bIsSwordDrawn ) {
-		FRotator directionToFace( 0, GetFollowCamera()->GetComponentRotation().Yaw, 0 );
-		this->SetActorRotation( directionToFace );
-	}
+	AddControllerYawInput( Val );	// called in original Turn
 }
 
 void ADragoonCharacter::MyLookUp( float Rate ) {
+	// if we are determining attack direction
 	if ( bIsGettingAttackDirection ) {
-		attackDirection.Y += Rate;
+		attackDirection.Y += Rate;	// add Y movement of mouse to vector
 		return;
 	}
 	
-	AddControllerPitchInput( Rate );
+	AddControllerPitchInput( Rate );	// called in original LookUp
 }
 
 void ADragoonCharacter::SheatheUnsheatheSword() {
 	bIsSwordDrawn = !bIsSwordDrawn;	// set is sword drawn to opposite
-	this->GetCharacterMovement()->bOrientRotationToMovement = !( this->GetCharacterMovement()->bOrientRotationToMovement );
+	this->GetCharacterMovement()->bOrientRotationToMovement = !( this->GetCharacterMovement()->bOrientRotationToMovement );	// toggle orienting rotation with movement
+	bUseControllerRotationYaw = !bUseControllerRotationYaw;	// toggle whether to move character yaw with camera yaw
 }
 
 void ADragoonCharacter::ResetMoveFloats() {
@@ -205,36 +206,34 @@ void ADragoonCharacter::ResetMoveFloats() {
 	moveRight = 0;
 }
 
-void ADragoonCharacter::EnableStrongAttackModifier() {
+void ADragoonCharacter::StrongAttack() {
 	bIsStrongAttack = true;
+	BasicAttack();
 }
 
-void ADragoonCharacter::DisableStrongAttackModifier() {
-	bIsStrongAttack = false;
-}
-
-void ADragoonCharacter::EnableFeintAttackModifier() {
+void ADragoonCharacter::FeintAttack() {
 	bIsFeintAttack = true;
-}
-
-void ADragoonCharacter::DisableFeintAttackModifier() {
-	bIsFeintAttack = false;
+	BasicAttack();
 }
 
 void ADragoonCharacter::EnableDodging() {
+	// jump if sword isn't out
 	if ( !bIsSwordDrawn ) {
 		Jump();
 		return;
 	}
 
-	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+	// check for other actions occurring
+	if ( IsActionInProgress() )
 		return;
 
+	// set animBP bool and turn off movement input
 	bIsDodging = true;
 	Controller->SetIgnoreMoveInput( true );
 }
 
 void ADragoonCharacter::DodgeKeyReleased() {
+	// call this engine function if sword is not out
 	if ( !bIsSwordDrawn ) {
 		StopJumping();
 		return;
@@ -242,54 +241,62 @@ void ADragoonCharacter::DodgeKeyReleased() {
 }
 
 void ADragoonCharacter::Parry() {
-	if ( bIsGettingAttackDirection || bIsAttacking || bIsParrying || bIsDodging )
+	// check for other actions occurring
+	if ( IsActionInProgress() )
 		return;
 
+	// draw sword if it is not out already
 	if ( !bIsSwordDrawn ) {
 		this->SheatheUnsheatheSword();
 		return;
 	}
 
-	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );
-	Controller->SetIgnoreMoveInput( true );
-	bIsGettingAttackDirection = true;
+	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );	// start slow-mo effect
+	Controller->SetIgnoreMoveInput( true );	// ignore movement while deciding attack direction
+	bIsGettingAttackDirection = true;	// true to get attack direction vector
 }
 
 void ADragoonCharacter::BeginParry() {
+	// if we don't have attack direction, exit
 	if ( !bIsGettingAttackDirection )
 		return;
 
-	AttackDirectionChosen();
-	bIsParrying = true;
+	AttackDirectionChosen();	// convert vector to direction from enum array
+	bIsParrying = true;	// set animBP bool
 }
 
 void ADragoonCharacter::AttackDirectionChosen() {
-	bIsGettingAttackDirection = false;
-	attackDirection.Normalize( .1f );
-	directionOfAttack = DetermineAttackDirection( attackDirection );
-	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 1 );
+	bIsGettingAttackDirection = false;	// stop calculating vector from mouse movement
+	attackDirection.Normalize( .1f );	// normalize vector, but if squared length is less than .1f set it to 0
+	directionOfAttack = DetermineAttackDirection( attackDirection );	// get the enum array spot from vector
+	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 1 );	// disable slow-mo effect
 }
 
 void ADragoonCharacter::FinishedAttacking() {
-	bIsAttacking = false;
-	attackDirection = FVector2D( 0, 0 );
-	Controller->SetIgnoreMoveInput( false );
+	bIsAttacking = false;	// set animBPs bool to false
+	bIsStrongAttack = false;
+	bIsFeintAttack = false;
+	attackDirection = FVector2D( 0, 0 );	// reset attack direction vector
+	Controller->SetIgnoreMoveInput( false );	// enable movement input
 }
 
 void ADragoonCharacter::FinishedDodging() {
-	bIsDodging = false;
-	Controller->SetIgnoreMoveInput( false );
+	bIsDodging = false;	// set animBP bool to false
+	Controller->SetIgnoreMoveInput( false );	// enable movement input
 }
 
 void ADragoonCharacter::FinishedParrying() {
-	bIsParrying = false;
-	attackDirection = FVector2D( 0, 0 );
-	Controller->SetIgnoreMoveInput( false );
+	bIsParrying = false;	// set animBP bool to false
+	attackDirection = FVector2D( 0, 0 );	// reset attack direction vector
+	Controller->SetIgnoreMoveInput( false );	// enable movement input
 }
 
 uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
+	// enum variables for row/column
 	EAttackHorizontal hor;
 	EAttackVertical ver;
+
+	// determine which column based on X value
 	if ( vec.X > 0.2f )
 		hor = EAttackHorizontal::AH_Right;
 	else if ( vec.X < -0.2f )
@@ -298,6 +305,7 @@ uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
 		hor = EAttackHorizontal::AH_Center;
 	
 	// UE4 calculates Y inversely. Moving the mouse upward will result in negative y values and vice versa
+	// determine which row based on Y value
 	if ( vec.Y > 0.2f )
 		ver = EAttackVertical::AV_Down;
 	else if ( vec.Y < -0.2f )
@@ -305,5 +313,46 @@ uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
 	else
 		ver = EAttackVertical::AV_Center;
 
+	// return the corresponding entry from array
 	return AttackOrientation[ (int32)ver ][ (int32)hor ];
+}
+
+bool ADragoonCharacter::IsActionInProgress() {
+	if ( bIsAttacking || bIsDodging || bIsDead || bIsHurt || bIsRecovering || bIsGettingAttackDirection || bIsParrying )
+		return true;
+	else
+		return false;
+}
+
+void ADragoonCharacter::TakeDamage( int Val ) {
+	if ( bIsHurt )
+		return;
+
+	health -= Val;
+	Controller->SetIgnoreMoveInput( true );
+
+	if ( health <= 0 )
+		Dead();
+	else
+		bIsHurt = true;
+}
+
+void ADragoonCharacter::Dead() {
+	bIsDead = true;
+}
+
+void ADragoonCharacter::RecoveredFromHit() {
+	Controller->SetIgnoreMoveInput( false );
+	bIsHurt = false;
+}
+
+void ADragoonCharacter::FinishedRecovering() {
+	Controller->SetIgnoreMoveInput( false );
+	bIsRecovering = false;
+}
+
+void ADragoonCharacter::AttackWasParried() {
+	this->FinishedAttacking();
+	Controller->SetIgnoreMoveInput( true );
+	bIsRecovering = true;
 }
