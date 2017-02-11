@@ -309,7 +309,7 @@ public:
 	 * Will check to see if character has died and will call Dead().
 	 */
 	UFUNCTION( BlueprintCallable, Category = Combat )
-	void TakeDamage( int Val );
+	void MyTakeDamage( int Val );
 
 	/**
 	 * Sets bIsDead to true.

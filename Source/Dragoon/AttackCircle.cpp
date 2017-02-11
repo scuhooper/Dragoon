@@ -3,10 +3,13 @@
 #include "Dragoon.h"
 #include "AttackCircle.h"
 
-AttackCircle::AttackCircle()
-{
+UAttackCircle::UAttackCircle() {
+	availableEnemyScore = maxEnemyScore;
+	availableAttackScore = maxAttackScore;
 }
 
-AttackCircle::~AttackCircle()
-{
+void UAttackCircle::JoinCircle( ADragoonCharacter* attacker ) {
+	// if attacker's score <= available enemy score
+		// add attacker to enemies in circle
+		// reduce available score by attacker's score
 }
