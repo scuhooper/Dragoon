@@ -6,6 +6,17 @@
 #include "UObject/NoExportTypes.h"
 #include "AttackCircle.generated.h"
 
+enum class EAttackCircleSlot {
+	ACS_Front,
+	ACS_FrontRight,
+	ACS_Right,
+	ACS_BackRight,
+	ACS_Back,
+	ACS_BackLeft,
+	ACS_Left,
+	ACS_FrontLeft
+};
+
 /**
  * 
  */
@@ -33,6 +44,10 @@ private:
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
 	int availableAttackScore;
 
+	FVector centerOfCircle;
+
+	FRotator directionOfCircle;
+
 	// Pointer to the player
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
 	ADragoonCharacter* player;
@@ -43,6 +58,7 @@ private:
 
 public:
 	UAttackCircle();
+	UAttackCircle( ADragoonCharacter* playerCharacter );
 
 	/** Returns availableAttackScore **/
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
@@ -62,6 +78,10 @@ public:
 	 */
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
 	void JoinCircle( ADragoonCharacter* attacker );
+
+	void UpdateCircleLocation();
+
+	void UpdateCircleRotation();
 private:
 
 };
