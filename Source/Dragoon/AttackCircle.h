@@ -6,7 +6,9 @@
 #include "UObject/NoExportTypes.h"
 #include "AttackCircle.generated.h"
 
-enum class EAttackCircleSlot {
+// enum for naming the 8 attack circle slots with regard to the player's orientation
+UENUM()
+enum class EAttackCircleSlot : uint8 {
 	ACS_Front,
 	ACS_FrontRight,
 	ACS_Right,
@@ -20,7 +22,6 @@ enum class EAttackCircleSlot {
 /**
  * 
  */
-
 UCLASS()
 class DRAGOON_API UAttackCircle : public UObject
 {
@@ -35,6 +36,10 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
 	int maxAttackScore;
 
+	// Holds the amount in cm that the slots should be away from the center of the circle
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
+	float offsetScale = 250;
+
 private:
 	// The score available to place new enemies in the circle
 	UPROPERTY( VisibleAnywhere,  Category = AttackCirlce )
@@ -44,9 +49,8 @@ private:
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
 	int availableAttackScore;
 
+	// The origin of the attack circle which is based off the location of the player
 	FVector centerOfCircle;
-
-	FRotator directionOfCircle;
 
 	// Pointer to the player
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
@@ -56,8 +60,24 @@ private:
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
 	TArray<ADragoonCharacter*> enemiesInCircle;
 
+	// A hashtable for keeping the world position of the attack circle slots
+	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
+	TMap<EAttackCircleSlot, FVector> circleSlotLocations;
+
+	// A hashtable for keeping the pointer for which enemy is in each slot. Is set to nullptr if no enemy is in slot.
+	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
+	TMap<EAttackCircleSlot, ADragoonCharacter*> circleSlotOccupant;
+
+	// A hashtable for keeping the offset values of the attack circle slots from the center of the circle
+	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
+	TMap<EAttackCircleSlot, FVector> circleSlotOffset;
+
 public:
 	UAttackCircle();
+	/**
+	 * Creates an instance of the AttackCircle class.
+	 * @param playerCharacter	a pointer to the DragoonCharacter that will be set as the player
+	 */
 	UAttackCircle( ADragoonCharacter* playerCharacter );
 
 	/** Returns availableAttackScore **/
@@ -75,13 +95,40 @@ public:
 
 	/**
 	 * Handles request from an attacker to join the attack circle
+	 * @param attacker	ADragoonCharacter that wants to be able to attack the player
 	 */
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
 	void JoinCircle( ADragoonCharacter* attacker );
 
+	/**
+	 * Sets centerOfCirlce to be the same as the player's location
+	 */
 	void UpdateCircleLocation();
 
-	void UpdateCircleRotation();
-private:
+	/**
+	 * Sets the slot with the agent as an occupant to have a nullptr occupant.
+	 * @param agent	Which ADragoonCharacter* you wish to remove from the attack circle
+	 */
+	void RemoveAgentFromCircle( ADragoonCharacter* agent );
 
+	/**
+	 * Returns the location of the slot to which an agent is assigned
+	 * @param agent	ADragoonCharacter who needs to know their slot's location
+	 */
+	FVector GetLocationForAgent( ADragoonCharacter* agent );
+
+private:
+	/**
+	* Compares the distance squared of all the empty attack circle slots and returns the closest one.
+	* @param requester	pointer to the enemy requesting to join the attack circle
+	* @return	returns the enum value for the closest, empty slot
+	*/
+	EAttackCircleSlot CheckForClosestAvailableSlot( ADragoonCharacter* requester );
+
+	/**
+	 * Sets circleSlotOccupant value for Key slot to be agent
+	 * @param agent	pointer to ADragoonCharacter that wants to join circle
+	 * @param slot	The slot enum which is to be assigned
+	 */
+	void AssignAgentToSlot( ADragoonCharacter* agent, EAttackCircleSlot slot );
 };
