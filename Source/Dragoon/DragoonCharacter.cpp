@@ -324,7 +324,7 @@ bool ADragoonCharacter::IsActionInProgress() {
 		return false;
 }
 
-void ADragoonCharacter::TakeDamage( int Val ) {
+void ADragoonCharacter::MyTakeDamage( int Val ) {
 	if ( bIsHurt )
 		return;
 
