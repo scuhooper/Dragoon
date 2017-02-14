@@ -8,35 +8,18 @@ UAttackCircle::UAttackCircle() {
 }
 
 UAttackCircle::UAttackCircle( ADragoonCharacter* playerCharacter ) {
-	// set available scores to max scores
-	availableEnemyScore = maxEnemyScore;
-	availableAttackScore = maxAttackScore;
-	player = playerCharacter;	// set the player reference
-
-	// set up offset with vectors
-	circleSlotOffset[ EAttackCircleSlot::ACS_Front ] = FVector( 1, 0, 0 );
-	circleSlotOffset[ EAttackCircleSlot::ACS_FrontRight ] = FVector( 1, 1, 0 );
-	circleSlotOffset[ EAttackCircleSlot::ACS_FrontLeft ] = FVector( 1, -1, 0 );
-	circleSlotOffset[ EAttackCircleSlot::ACS_Left ] = FVector( 0, -1, 0 );
-	circleSlotOffset[ EAttackCircleSlot::ACS_Right ] = FVector( 0, 1, 0 );
-	circleSlotOffset[ EAttackCircleSlot::ACS_Back ] = FVector( -1, 0, 0 );
-	circleSlotOffset[ EAttackCircleSlot::ACS_BackRight ] = FVector( -1, 1, 0 );
-	circleSlotOffset[ EAttackCircleSlot::ACS_BackLeft ] = FVector( -1, -1, 0 );
-
-	// normalize vectors then multiply by the scale of the offset
-	for ( auto& pair : circleSlotOffset ) {
-		pair.Value.Normalize();
-		pair.Value * offsetScale;
-	}
-
-	// establish grid based on character position
-	UpdateCircleLocation();
+	player = playerCharacter;
+	Initialize();
 }
 
 void UAttackCircle::JoinCircle( AEnemyAgent* attacker ) {
 	// if attacker's score <= available enemy score
+	if ( attacker->GetEnemyScore() <= availableAttackScore ) {
 		// add attacker to enemies in circle
+		circleSlotOccupant[ CheckForClosestAvailableSlot( attacker ) ] = attacker;
 		// reduce available score by attacker's score
+		availableEnemyScore -= attacker->GetEnemyScore();
+	}
 }
 
 void UAttackCircle::UpdateCircleLocation() {
@@ -91,6 +74,47 @@ void UAttackCircle::AgentAttackFinished( int attackScore ) {
 	// shouldn't happen, but checking just to ensure
 	if ( availableAttackScore > maxAttackScore )
 		availableAttackScore = maxAttackScore;
+}
+
+void UAttackCircle::SetPlayer( ADragoonCharacter* newPlayer ) {
+	player = newPlayer;
+}
+
+void UAttackCircle::Initialize() {
+	if ( player == nullptr )
+		return;
+
+	// set available scores to max scores
+	availableEnemyScore = maxEnemyScore;
+	availableAttackScore = maxAttackScore;
+
+	// set up offset with vectors
+	circleSlotOffset.Add( EAttackCircleSlot::ACS_Front, FVector( 1, 0, 0 ) );
+	circleSlotOffset.Add( EAttackCircleSlot::ACS_FrontRight, FVector( 1, 1, 0 ) );
+	circleSlotOffset.Add( EAttackCircleSlot::ACS_FrontLeft, FVector( 1, -1, 0 ) );
+	circleSlotOffset.Add( EAttackCircleSlot::ACS_Left, FVector( 0, -1, 0 ) );
+	circleSlotOffset.Add( EAttackCircleSlot::ACS_Right, FVector( 0, 1, 0 ) );
+	circleSlotOffset.Add( EAttackCircleSlot::ACS_Back, FVector( -1, 0, 0 ) );
+	circleSlotOffset.Add( EAttackCircleSlot::ACS_BackRight, FVector( -1, 1, 0 ) );
+	circleSlotOffset.Add( EAttackCircleSlot::ACS_BackLeft, FVector( -1, -1, 0 ) );
+
+	// normalize vectors then multiply by the scale of the offset
+	for ( auto& pair : circleSlotOffset ) {
+		pair.Value.Normalize();
+		pair.Value * offsetScale;
+	}
+
+	// establish grid based on character position
+	UpdateCircleLocation();
+
+	circleSlotOccupant.Add( EAttackCircleSlot::ACS_Front, nullptr );
+	circleSlotOccupant.Add( EAttackCircleSlot::ACS_FrontRight, nullptr );
+	circleSlotOccupant.Add( EAttackCircleSlot::ACS_FrontLeft, nullptr );
+	circleSlotOccupant.Add( EAttackCircleSlot::ACS_Left, nullptr );
+	circleSlotOccupant.Add( EAttackCircleSlot::ACS_Right, nullptr );
+	circleSlotOccupant.Add( EAttackCircleSlot::ACS_Back, nullptr );
+	circleSlotOccupant.Add( EAttackCircleSlot::ACS_BackRight, nullptr );
+	circleSlotOccupant.Add( EAttackCircleSlot::ACS_BackLeft, nullptr );
 }
 
 EAttackCircleSlot UAttackCircle::CheckForClosestAvailableSlot( AEnemyAgent* requester ) {

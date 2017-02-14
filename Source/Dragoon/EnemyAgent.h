@@ -23,4 +23,8 @@ public:
 	AEnemyAgent();
 
 	AEnemyAgent( int score );
+
+	/** Returns enemyScore **/
+	UFUNCTION( BlueprintCallable, Category = EnemyAgent )
+	FORCEINLINE int GetEnemyScore() { return enemyScore; }
 };

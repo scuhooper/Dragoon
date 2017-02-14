@@ -133,6 +133,18 @@ public:
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
 	void AgentAttackFinished( int attackScore );
 
+	/**
+	 * Sets the player to the supplied pointer
+	 */
+	UFUNCTION( BlueprintCallable, Category = AttackCircle )
+	void SetPlayer( ADragoonCharacter* newPlayer );
+
+	/**
+	 * Performs initial setup of member variables and TMaps. Requires player to be set before it will run.
+	 */
+	UFUNCTION( BlueprintCallable, Category = AttackCircle )
+	void Initialize();
+
 private:
 	/**
 	* Compares the distance squared of all the empty attack circle slots and returns the closest one.
