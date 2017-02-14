@@ -76,6 +76,23 @@ FVector UAttackCircle::GetLocationForAgent( ADragoonCharacter* agent ) {
 	return agent->GetActorLocation();
 }
 
+bool UAttackCircle::CanAgentPerformAttack( int attackScore ) {
+	if ( attackScore <= availableAttackScore ) {	// check if attack will be valid before allowing it
+		availableAttackScore -= attackScore;
+		return true;
+	}
+	else
+		return false;
+}
+
+void UAttackCircle::AgentAttackFinished( int attackScore ) {
+	availableAttackScore += attackScore;	// add the finished attack's score to the available score
+
+	// shouldn't happen, but checking just to ensure
+	if ( availableAttackScore > maxAttackScore )
+		availableAttackScore = maxAttackScore;
+}
+
 EAttackCircleSlot UAttackCircle::CheckForClosestAvailableSlot( ADragoonCharacter* requester ) {
 	FVector requesterLocation = requester->GetActorLocation();
 	EAttackCircleSlot bestSlot;

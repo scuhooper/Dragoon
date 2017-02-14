@@ -117,6 +117,21 @@ public:
 	 */
 	FVector GetLocationForAgent( ADragoonCharacter* agent );
 
+	/**
+	 * Checks if the agent's requested attack with score is able to be used currently.
+	 * @param attackScore	The score associated with the attack an agent wishes to make
+	 * @returns	Will return true if the attack can be made with the current available attack score, or false if it cannot be made
+	 */
+	UFUNCTION( BlueprintCallable, Caetgory = AttackCircle )
+	bool CanAgentPerformAttack( int attackScore );
+
+	/**
+	 * Returns the score from a finished attack back to the available attack score
+	 * @param attackScore	The score associated with the attack that has completed
+	 */
+	UFUNCTION( BlueprintCallable, Category = AttackCircle )
+	void AgentAttackFinished( int attackScore );
+
 private:
 	/**
 	* Compares the distance squared of all the empty attack circle slots and returns the closest one.
