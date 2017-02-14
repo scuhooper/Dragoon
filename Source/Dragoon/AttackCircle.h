@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DragoonCharacter.h"
+#include "EnemyAgent.h"
 #include "UObject/NoExportTypes.h"
 #include "AttackCircle.generated.h"
 
@@ -58,7 +59,7 @@ private:
 
 	// An array of all enemies currently within the circle
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
-	TArray<ADragoonCharacter*> enemiesInCircle;
+	TArray<AEnemyAgent*> enemiesInCircle;
 
 	// A hashtable for keeping the world position of the attack circle slots
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
@@ -66,7 +67,7 @@ private:
 
 	// A hashtable for keeping the pointer for which enemy is in each slot. Is set to nullptr if no enemy is in slot.
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
-	TMap<EAttackCircleSlot, ADragoonCharacter*> circleSlotOccupant;
+	TMap<EAttackCircleSlot, AEnemyAgent*> circleSlotOccupant;
 
 	// A hashtable for keeping the offset values of the attack circle slots from the center of the circle
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
@@ -91,14 +92,14 @@ public:
 	FORCEINLINE ADragoonCharacter* GetPlayer() const { return player; }
 	/** Returns enemiesInCircle **/
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
-	FORCEINLINE TArray<ADragoonCharacter*> GetEnemiesInCircle() const { return enemiesInCircle; }
+	FORCEINLINE TArray<AEnemyAgent*> GetEnemiesInCircle() const { return enemiesInCircle; }
 
 	/**
 	 * Handles request from an attacker to join the attack circle
 	 * @param attacker	ADragoonCharacter that wants to be able to attack the player
 	 */
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
-	void JoinCircle( ADragoonCharacter* attacker );
+	void JoinCircle( AEnemyAgent* attacker );
 
 	/**
 	 * Sets centerOfCirlce to be the same as the player's location
@@ -109,20 +110,20 @@ public:
 	 * Sets the slot with the agent as an occupant to have a nullptr occupant.
 	 * @param agent	Which ADragoonCharacter* you wish to remove from the attack circle
 	 */
-	void RemoveAgentFromCircle( ADragoonCharacter* agent );
+	void RemoveAgentFromCircle( AEnemyAgent* agent );
 
 	/**
 	 * Returns the location of the slot to which an agent is assigned
 	 * @param agent	ADragoonCharacter who needs to know their slot's location
 	 */
-	FVector GetLocationForAgent( ADragoonCharacter* agent );
+	FVector GetLocationForAgent( AEnemyAgent* agent );
 
 	/**
 	 * Checks if the agent's requested attack with score is able to be used currently.
 	 * @param attackScore	The score associated with the attack an agent wishes to make
 	 * @returns	Will return true if the attack can be made with the current available attack score, or false if it cannot be made
 	 */
-	UFUNCTION( BlueprintCallable, Caetgory = AttackCircle )
+	UFUNCTION( BlueprintCallable, Category = AttackCircle )
 	bool CanAgentPerformAttack( int attackScore );
 
 	/**
@@ -138,12 +139,12 @@ private:
 	* @param requester	pointer to the enemy requesting to join the attack circle
 	* @return	returns the enum value for the closest, empty slot
 	*/
-	EAttackCircleSlot CheckForClosestAvailableSlot( ADragoonCharacter* requester );
+	EAttackCircleSlot CheckForClosestAvailableSlot( AEnemyAgent* requester );
 
 	/**
 	 * Sets circleSlotOccupant value for Key slot to be agent
 	 * @param agent	pointer to ADragoonCharacter that wants to join circle
 	 * @param slot	The slot enum which is to be assigned
 	 */
-	void AssignAgentToSlot( ADragoonCharacter* agent, EAttackCircleSlot slot );
+	void AssignAgentToSlot( AEnemyAgent* agent, EAttackCircleSlot slot );
 };

@@ -33,7 +33,7 @@ UAttackCircle::UAttackCircle( ADragoonCharacter* playerCharacter ) {
 	UpdateCircleLocation();
 }
 
-void UAttackCircle::JoinCircle( ADragoonCharacter* attacker ) {
+void UAttackCircle::JoinCircle( AEnemyAgent* attacker ) {
 	// if attacker's score <= available enemy score
 		// add attacker to enemies in circle
 		// reduce available score by attacker's score
@@ -50,7 +50,7 @@ void UAttackCircle::UpdateCircleLocation() {
 	}
 }
 
-void UAttackCircle::RemoveAgentFromCircle( ADragoonCharacter* agent ) {
+void UAttackCircle::RemoveAgentFromCircle( AEnemyAgent* agent ) {
 	// check for which slot agent belongs to and then remove them from it
 	for ( auto& slot : circleSlotOccupant ) {
 		if ( slot.Value == agent ) {
@@ -63,7 +63,7 @@ void UAttackCircle::RemoveAgentFromCircle( ADragoonCharacter* agent ) {
 	UE_LOG( LogTemp, Error, TEXT( "Attempted to remove agent %s who is not currently in the circle!" ), *agent->GetName() );
 }
 
-FVector UAttackCircle::GetLocationForAgent( ADragoonCharacter* agent ) {
+FVector UAttackCircle::GetLocationForAgent( AEnemyAgent* agent ) {
 	// check for which slot agent is assigned to and then return the location of that slot
 	for ( auto& Location : circleSlotOccupant ) {
 		if ( Location.Value == agent ) {
@@ -93,7 +93,7 @@ void UAttackCircle::AgentAttackFinished( int attackScore ) {
 		availableAttackScore = maxAttackScore;
 }
 
-EAttackCircleSlot UAttackCircle::CheckForClosestAvailableSlot( ADragoonCharacter* requester ) {
+EAttackCircleSlot UAttackCircle::CheckForClosestAvailableSlot( AEnemyAgent* requester ) {
 	FVector requesterLocation = requester->GetActorLocation();
 	EAttackCircleSlot bestSlot;
 	TArray<EAttackCircleSlot> freeSlots;
@@ -125,7 +125,7 @@ EAttackCircleSlot UAttackCircle::CheckForClosestAvailableSlot( ADragoonCharacter
 	return bestSlot;
 }
 
-void UAttackCircle::AssignAgentToSlot( ADragoonCharacter* agent, EAttackCircleSlot slot ) {
+void UAttackCircle::AssignAgentToSlot( AEnemyAgent* agent, EAttackCircleSlot slot ) {
 	// error check for if the slot is currently assigned to another agent
 	if ( circleSlotOccupant[ slot ] != nullptr ) {
 		UE_LOG( LogTemp, Error, TEXT( "Attempted to assign agent %s to an attack circle slot that was not empty" ), *agent->GetName() );
