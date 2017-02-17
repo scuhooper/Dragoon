@@ -2,7 +2,7 @@
 
 #pragma once
 
-// #include "AttackCircle.h"
+#include "AttackCircle.h"
 #include "DragoonCharacter.h"
 #include "PlayerCharacter.generated.h"
 
@@ -15,8 +15,10 @@ class DRAGOON_API APlayerCharacter : public ADragoonCharacter
 	GENERATED_BODY()
 	
 private:
-	// UAttackCircle* attackCircle = nullptr;
+	AttackCircle* attackCircle = nullptr;
 	
 public:
 	APlayerCharacter();
+
+	virtual void BeginPlay();
 };

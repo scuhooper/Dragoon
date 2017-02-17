@@ -9,6 +9,7 @@ AttackCircle::AttackCircle()
 
 AttackCircle::~AttackCircle()
 {
+	player = nullptr;
 }
 
 AttackCircle::AttackCircle( ADragoonCharacter* playerCharacter ) {

@@ -12,7 +12,7 @@ class ADragoonGameMode : public AGameModeBase
 public:
 	ADragoonGameMode();
 
-	AttackCircle* attackCircle;
+	AttackCircle* attackCircle = new AttackCircle();
 };
 
 

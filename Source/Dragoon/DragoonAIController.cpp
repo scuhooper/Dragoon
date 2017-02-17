@@ -5,4 +5,5 @@
 
 ADragoonAIController::ADragoonAIController() {
 	// do super awesome AI stuff
+	agent = ( AEnemyAgent* )GetCharacter();
 }

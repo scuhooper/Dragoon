@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "EnemyAgent.h"
 #include "AIController.h"
 #include "DragoonAIController.generated.h"
 
@@ -15,4 +16,7 @@ class DRAGOON_API ADragoonAIController : public AAIController
 	
 public:
 	ADragoonAIController();
+
+private:
+	AEnemyAgent* agent;
 };
