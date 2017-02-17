@@ -12,4 +12,6 @@ ADragoonGameMode::ADragoonGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	attackCircle = new AttackCircle();
 }

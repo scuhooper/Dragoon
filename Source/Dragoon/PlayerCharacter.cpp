@@ -4,9 +4,9 @@
 #include "PlayerCharacter.h"
 
 APlayerCharacter::APlayerCharacter() {
-	attackCircle = NewObject<UAttackCircle>();
+	/*attackCircle = NewObject<UAttackCircle>();
 	attackCircle->SetPlayer( this );
-	attackCircle->Initialize();
+	attackCircle->Initialize();*/
 }
 
 
