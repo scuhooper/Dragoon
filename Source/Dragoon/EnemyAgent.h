@@ -16,7 +16,16 @@ class DRAGOON_API AEnemyAgent : public ADragoonCharacter
 public:
 	
 private:
+	/**
+	 * A number to reflect the enemie's strength when joining the attack circle of a player
+	 */
 	int enemyScore;
+
+	int strongAttackScore;
+
+	int quickAttackScore;
+
+	int feintAttackScore;
 	
 public:
 	// default c-tor needed for all UObject classes

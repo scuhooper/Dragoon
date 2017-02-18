@@ -12,8 +12,5 @@ class ADragoonGameMode : public AGameModeBase
 public:
 	ADragoonGameMode();
 
-	AttackCircle* attackCircle = new AttackCircle();
+	TSharedPtr<AttackCircle> attackCircle = MakeShareable( new AttackCircle() );
 };
-
-
-

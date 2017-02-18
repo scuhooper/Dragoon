@@ -15,7 +15,7 @@ class DRAGOON_API APlayerCharacter : public ADragoonCharacter
 	GENERATED_BODY()
 	
 private:
-	AttackCircle* attackCircle = nullptr;
+	TSharedPtr<AttackCircle> attackCircle;
 	
 public:
 	APlayerCharacter();
