@@ -26,6 +26,8 @@ private:
 	int quickAttackScore;
 
 	int feintAttackScore;
+
+	bool bIsInCombat = false;
 	
 public:
 	// default c-tor needed for all UObject classes
@@ -35,5 +37,9 @@ public:
 
 	/** Returns enemyScore **/
 	UFUNCTION( BlueprintCallable, Category = EnemyAgent )
-	FORCEINLINE int GetEnemyScore() { return enemyScore; }
+	FORCEINLINE int GetEnemyScore() const { return enemyScore; }
+
+	/** Returns bIsInCombat **/
+	UFUNCTION( BlueprintCallable, Category = EnemyAgent )
+	FORCEINLINE bool GetIsInCombat() const { return bIsInCombat; }
 };
