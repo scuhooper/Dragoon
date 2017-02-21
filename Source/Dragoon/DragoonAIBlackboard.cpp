@@ -18,6 +18,7 @@ DragoonAIBlackboard::DragoonAIBlackboard( TSharedPtr<AttackCircle> circle ) {
 
 DragoonAIBlackboard::~DragoonAIBlackboard()
 {
+	attackCircle.Reset();
 }
 
 void DragoonAIBlackboard::RegisterAgent( AEnemyAgent* agent ) {
