@@ -10,12 +10,17 @@
 class DRAGOON_API DragoonAIBlackboard
 {
 public:
+
 private:
 	TArray<AEnemyAgent*> agentsNotInCombat;
 
 	TArray<AEnemyAgent*> agentsInCombat;
 
 	TSharedPtr<AttackCircle> attackCircle;
+
+	int attackNGram[ 27 ][ 27 ][ 27 ];
+
+	int atk1 = 0, atk2 = 0, atk3 = 0;
 
 public:
 	DragoonAIBlackboard();
@@ -25,6 +30,7 @@ public:
 	void RemoveAgent( AEnemyAgent* agent );
 	void HaveAgentJoinCombat( AEnemyAgent* agent );
 	void HaveAgentFleeCombat( AEnemyAgent* agent );
+	void RecordPlayerAttack( FAttack atk );
 
 private:
 

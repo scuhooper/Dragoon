@@ -34,6 +34,41 @@ enum class EAttackHorizontal : uint8
 	AH_Right
 };
 
+// enum to represent the type of attack
+UENUM()
+enum class EAttackType : uint8 {
+	AT_Quick = 0,
+	AT_Strong = 9,
+	AT_Feint = 18
+};
+
+// struct to represent attacks in the N-grams used by DragoonAIBlackboard
+USTRUCT()
+struct FAttack {
+	GENERATED_BODY()
+
+	UPROPERTY()
+	EAttackDirection direction;
+
+	UPROPERTY()
+	EAttackType type;
+
+	UPROPERTY()
+	int id;
+
+	FAttack() {
+		direction = EAttackDirection::AD_DownwardRightSlash;
+		type = EAttackType::AT_Quick;
+		id = NULL;
+	}
+
+	FAttack( EAttackDirection dir, EAttackType atkType ) {
+		direction = dir;
+		type = atkType;
+		id = (uint8)direction + (uint8)type;
+	}
+};
+
 UCLASS(config=Game)
 class ADragoonCharacter : public ACharacter
 {

@@ -4,7 +4,7 @@
 #include "EnemyAgent.h"
 
 AEnemyAgent::AEnemyAgent() {
-
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 AEnemyAgent::AEnemyAgent( int score ) {
