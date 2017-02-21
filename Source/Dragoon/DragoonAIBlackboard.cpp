@@ -50,3 +50,14 @@ void DragoonAIBlackboard::HaveAgentFleeCombat( AEnemyAgent* agent ) {
 		RegisterAgent( agent );
 	}
 }
+
+void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
+	if ( agentsInCombat.Num() == 0 )
+		return;
+
+	atk1 = atk2;
+	atk2 = atk3;
+	atk3 = atk.id;
+
+	attackNGram[ atk1 ][ atk2 ][ atk3 ]++;
+}
