@@ -18,7 +18,7 @@ class DRAGOON_API APlayerCharacter : public ADragoonCharacter
 private:
 	TSharedPtr<AttackCircle> attackCircle;
 
-	DragoonAIBlackboard* AIBlackboard;
+	DragoonAIBlackboard* AIBlackboard = nullptr;
 	
 public:
 	APlayerCharacter();

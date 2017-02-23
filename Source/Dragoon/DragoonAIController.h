@@ -14,6 +14,9 @@ UCLASS()
 class DRAGOON_API ADragoonAIController : public AAIController
 {
 	GENERATED_BODY()
+	
+public:
+	int test;
 
 private:
 	AEnemyAgent* agent;
@@ -22,4 +25,7 @@ private:
 	
 public:
 	ADragoonAIController();
+
+protected:
+	virtual void Tick( float DeltaSeconds ) override;
 };

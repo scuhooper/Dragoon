@@ -5,5 +5,11 @@
 
 ADragoonAIController::ADragoonAIController() {
 	// do super awesome AI stuff
-	agent = ( AEnemyAgent* )GetCharacter();
+	// agent = ( AEnemyAgent* )GetControlledPawn();
+	
+}
+
+void ADragoonAIController::Tick( float DeltaSeconds ) {
+	// do stuff every frame
+	OnPossess( agent );
 }
