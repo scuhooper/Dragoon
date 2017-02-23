@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Dragoon.h"
-#include "DragoonGameMode.h"
+#include "DragoonAIController.h"
 #include "DragoonAIBlackboard.h"
 
 DragoonAIBlackboard::DragoonAIBlackboard()
@@ -61,4 +61,10 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 	atk3 = atk.id;
 
 	attackNGram[ atk1 ][ atk2 ][ atk3 ]++;
+
+	if ( agentsInCombat.Contains( atk.target ) ) {
+		// make target react to incoming attack
+		ADragoonAIController* AIController = (ADragoonAIController*)atk.target->GetController();
+		AIController->test;
+	}
 }

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Dragoon.h"
+#include "DragoonAIBlackboard.h"
 #include "DragoonGameMode.h"
 #include "PlayerCharacter.h"
 
@@ -29,7 +30,15 @@ void APlayerCharacter::PlayerAttack() {
 	else
 		type = EAttackType::AT_Quick;
 
-	AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type ) );
+	// AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, GetActorForwardVector() ) );
+
+	FHitResult hit;
+	FCollisionQueryParams params( FName( TEXT( "Attack Target Trace" ) ), true, this );
+	ActorLineTraceSingle( hit, GetActorLocation(), GetActorForwardVector() * 500, ECollisionChannel::ECC_Pawn, params );
+
+	if ( ( AEnemyAgent* )hit.Actor.Get() ) {
+		AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, ( AEnemyAgent* )hit.Actor.Get() ) );
+	}
 }
 
 void APlayerCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputComponent ) {
