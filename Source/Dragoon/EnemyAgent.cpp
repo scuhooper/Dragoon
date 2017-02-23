@@ -21,6 +21,7 @@ AEnemyAgent::AEnemyAgent( int score ) {
 }
 
 void AEnemyAgent::BeginPlay() {
+	Super::BeginPlay();
 	ADragoonGameMode* game = ( ADragoonGameMode* )GetWorld()->GetAuthGameMode();
 	game->blackboard.RegisterAgent( this );
 	DrawSword();
