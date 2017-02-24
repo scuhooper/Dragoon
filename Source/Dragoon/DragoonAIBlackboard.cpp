@@ -10,7 +10,7 @@ DragoonAIBlackboard::DragoonAIBlackboard()
 	agentsNotInCombat.Empty();
 }
 
-DragoonAIBlackboard::DragoonAIBlackboard( TSharedPtr<AttackCircle> circle ) {
+DragoonAIBlackboard::DragoonAIBlackboard( AttackCircle* circle ) {
 	agentsInCombat.Empty();
 	agentsNotInCombat.Empty();
 	attackCircle = circle;
@@ -18,7 +18,7 @@ DragoonAIBlackboard::DragoonAIBlackboard( TSharedPtr<AttackCircle> circle ) {
 
 DragoonAIBlackboard::~DragoonAIBlackboard()
 {
-	attackCircle.Reset();
+	attackCircle = nullptr;
 }
 
 void DragoonAIBlackboard::RegisterAgent( AEnemyAgent* agent ) {

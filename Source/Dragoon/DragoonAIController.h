@@ -21,10 +21,11 @@ public:
 private:
 	AEnemyAgent* agent;
 
-	TSharedPtr<AttackCircle> attackCircle;
+	AttackCircle* attackCircle;
 	
 public:
 	ADragoonAIController();
+	~ADragoonAIController();
 
 protected:
 	virtual void Tick( float DeltaSeconds ) override;

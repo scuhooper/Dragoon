@@ -11,7 +11,7 @@ class ADragoonGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	TSharedPtr<AttackCircle> attackCircle = MakeShareable( new AttackCircle() );
+	AttackCircle attackCircle;
 
 	DragoonAIBlackboard blackboard;
 

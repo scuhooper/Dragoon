@@ -8,11 +8,15 @@
 APlayerCharacter::APlayerCharacter() {
 }
 
+APlayerCharacter::~APlayerCharacter() {
+	attackCircle = nullptr;
+}
+
 void APlayerCharacter::BeginPlay() {
 	Super::BeginPlay();
 
 	ADragoonGameMode* game = ( ADragoonGameMode* )GetWorld()->GetAuthGameMode();
-	attackCircle = game->attackCircle;
+	attackCircle = &game->attackCircle;
 	attackCircle->SetPlayer( this );
 	attackCircle->Initialize();
 

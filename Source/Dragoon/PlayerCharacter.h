@@ -16,12 +16,13 @@ class DRAGOON_API APlayerCharacter : public ADragoonCharacter
 	GENERATED_BODY()
 	
 private:
-	TSharedPtr<AttackCircle> attackCircle;
+	AttackCircle* attackCircle;
 
 	DragoonAIBlackboard* AIBlackboard = nullptr;
 	
 public:
 	APlayerCharacter();
+	~APlayerCharacter();
 
 	virtual void BeginPlay();
 

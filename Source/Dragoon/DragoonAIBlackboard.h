@@ -15,7 +15,7 @@ private:
 
 	TArray<AEnemyAgent*> agentsInCombat;
 
-	TSharedPtr<AttackCircle> attackCircle;
+	AttackCircle* attackCircle;
 
 	int attackNGram[ 27 ][ 27 ][ 27 ];
 
@@ -23,7 +23,7 @@ private:
 
 public:
 	DragoonAIBlackboard();
-	DragoonAIBlackboard( TSharedPtr<AttackCircle> circle );
+	DragoonAIBlackboard( AttackCircle* circle );
 	~DragoonAIBlackboard();
 	void RegisterAgent( AEnemyAgent* agent );
 	void RemoveAgent( AEnemyAgent* agent );
