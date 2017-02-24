@@ -15,10 +15,11 @@ ADragoonAIController::~ADragoonAIController() {
 void ADragoonAIController::Tick( float DeltaSeconds ) {
 	// do stuff every frame
 	Super::Tick( DeltaSeconds );
-	if ( !agent->GetIsSwordDrawn() )
-		agent->DrawSword();
+	/*if ( !agent->GetIsSwordDrawn() )
+		agent->DrawSword();*/
 
-	MoveToActor( GetWorld()->GetFirstPlayerController()->GetCharacter() );
+	MoveToActor( attackCircle->GetPlayer() );
+	UE_LOG( LogTemp, Warning, TEXT( "Agent's location is %s" ), *agent->GetActorLocation().ToString() );
 }
 
 void ADragoonAIController::BeginPlay() {
