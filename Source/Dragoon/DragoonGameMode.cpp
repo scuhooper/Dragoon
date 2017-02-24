@@ -12,4 +12,7 @@ ADragoonGameMode::ADragoonGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	attackCircle = AttackCircle();
+	blackboard = DragoonAIBlackboard( &attackCircle );
 }

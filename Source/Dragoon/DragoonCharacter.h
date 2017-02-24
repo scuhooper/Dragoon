@@ -3,10 +3,10 @@
 #include "GameFramework/Character.h"
 #include "DragoonCharacter.generated.h"
 
+// enum for particular attack direction based off of attack grid
 UENUM( BlueprintType )
 enum class EAttackDirection : uint8
 {
-	// enum for particular attack direction based off of attack grid
 	AD_DownwardRightSlash	UMETA( DisplayName == "DownwardRightSlash" ),
 	AD_DownwardSlash		UMETA( DisplayName == "DownwardSlash" ),
 	AD_DownwardLeftSlash	UMETA( DisplayName == "DownwardLeftSlash" ),
@@ -18,20 +18,28 @@ enum class EAttackDirection : uint8
 	AD_UpwardLeftSlash		UMETA( DisplayName == "UpwardLeftSlash" )
 };
 
+// enum to store whether the attack should go upwards, downwards, or through the middle
 enum class EAttackVertical : uint8
 {
-	// enum to store whether the attack should go upwards, downwards, or through the middle
 	AV_Up,
 	AV_Center,
 	AV_Down
 };
 
+// enum to store whether the attack should go towards the left, right, or center
 enum class EAttackHorizontal : uint8
 {
-	// enum to store whether the attack should go towards the left, right, or center
 	AH_Left,
 	AH_Center,
 	AH_Right
+};
+
+// enum to represent the type of attack
+UENUM()
+enum class EAttackType : uint8 {
+	AT_Quick = 0,
+	AT_Strong = 9,
+	AT_Feint = 18
 };
 
 UCLASS(config=Game)
@@ -234,7 +242,6 @@ protected:
 	 */
 	bool IsActionInProgress();
 
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
@@ -309,7 +316,7 @@ public:
 	 * Will check to see if character has died and will call Dead().
 	 */
 	UFUNCTION( BlueprintCallable, Category = Combat )
-	void TakeDamage( int Val );
+	void MyTakeDamage( int Val );
 
 	/**
 	 * Sets bIsDead to true.
