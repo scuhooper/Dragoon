@@ -14,12 +14,21 @@ UCLASS()
 class DRAGOON_API ADragoonAIController : public AAIController
 {
 	GENERATED_BODY()
+	
+public:
+	int test;
 
 private:
 	AEnemyAgent* agent;
 
-	TSharedPtr<AttackCircle> attackCircle;
+	AttackCircle* attackCircle;
 	
 public:
 	ADragoonAIController();
+	~ADragoonAIController();
+
+protected:
+	virtual void Tick( float DeltaSeconds ) override;
+
+	virtual void BeginPlay() override;
 };

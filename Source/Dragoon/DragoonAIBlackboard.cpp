@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Dragoon.h"
-#include "DragoonGameMode.h"
+#include "DragoonAIController.h"
 #include "DragoonAIBlackboard.h"
 
 DragoonAIBlackboard::DragoonAIBlackboard()
@@ -10,7 +10,7 @@ DragoonAIBlackboard::DragoonAIBlackboard()
 	agentsNotInCombat.Empty();
 }
 
-DragoonAIBlackboard::DragoonAIBlackboard( TSharedPtr<AttackCircle> circle ) {
+DragoonAIBlackboard::DragoonAIBlackboard( AttackCircle* circle ) {
 	agentsInCombat.Empty();
 	agentsNotInCombat.Empty();
 	attackCircle = circle;
@@ -18,6 +18,7 @@ DragoonAIBlackboard::DragoonAIBlackboard( TSharedPtr<AttackCircle> circle ) {
 
 DragoonAIBlackboard::~DragoonAIBlackboard()
 {
+	attackCircle = nullptr;
 }
 
 void DragoonAIBlackboard::RegisterAgent( AEnemyAgent* agent ) {
@@ -48,5 +49,22 @@ void DragoonAIBlackboard::HaveAgentFleeCombat( AEnemyAgent* agent ) {
 	else {
 		RemoveAgent( agent );
 		RegisterAgent( agent );
+	}
+}
+
+void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
+	if ( agentsInCombat.Num() == 0 )
+		return;
+
+	atk1 = atk2;
+	atk2 = atk3;
+	atk3 = atk.id;
+
+	attackNGram[ atk1 ][ atk2 ][ atk3 ]++;
+
+	if ( agentsInCombat.Contains( atk.target ) ) {
+		// make target react to incoming attack
+		ADragoonAIController* AIController = (ADragoonAIController*)atk.target->GetController();
+		AIController->test;
 	}
 }

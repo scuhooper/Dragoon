@@ -34,6 +34,14 @@ enum class EAttackHorizontal : uint8
 	AH_Right
 };
 
+// enum to represent the type of attack
+UENUM()
+enum class EAttackType : uint8 {
+	AT_Quick = 0,
+	AT_Strong = 9,
+	AT_Feint = 18
+};
+
 UCLASS(config=Game)
 class ADragoonCharacter : public ACharacter
 {

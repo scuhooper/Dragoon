@@ -42,4 +42,42 @@ public:
 	/** Returns bIsInCombat **/
 	UFUNCTION( BlueprintCallable, Category = EnemyAgent )
 	FORCEINLINE bool GetIsInCombat() const { return bIsInCombat; }
+
+	void DrawSword();
+
+protected:
+	virtual void BeginPlay();
+
+};
+
+// struct to represent attacks in the N-grams used by DragoonAIBlackboard
+USTRUCT()
+struct FAttack {
+	GENERATED_BODY()
+
+	UPROPERTY()
+	EAttackDirection direction;
+
+	UPROPERTY()
+	EAttackType type;
+
+	UPROPERTY()
+	int id;
+
+	UPROPERTY()
+	AEnemyAgent* target;
+
+	FAttack() {
+		direction = EAttackDirection::AD_DownwardRightSlash;
+		type = EAttackType::AT_Quick;
+		id = NULL;
+		target = nullptr;
+	}
+
+	FAttack( EAttackDirection dir, EAttackType atkType, AEnemyAgent* enemy ) {
+		direction = dir;
+		type = atkType;
+		id = ( uint8 )direction + ( uint8 )type;
+		target = enemy;
+	}
 };

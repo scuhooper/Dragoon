@@ -3,6 +3,7 @@
 #pragma once
 
 #include "AttackCircle.h"
+#include "DragoonAIBlackboard.h"
 #include "DragoonCharacter.h"
 #include "PlayerCharacter.generated.h"
 
@@ -15,10 +16,18 @@ class DRAGOON_API APlayerCharacter : public ADragoonCharacter
 	GENERATED_BODY()
 	
 private:
-	TSharedPtr<AttackCircle> attackCircle;
+	AttackCircle* attackCircle;
+
+	DragoonAIBlackboard* AIBlackboard = nullptr;
 	
 public:
 	APlayerCharacter();
+	~APlayerCharacter();
 
 	virtual void BeginPlay();
+
+protected:
+	void PlayerAttack();
+
+	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
 };
