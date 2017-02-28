@@ -17,8 +17,10 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 	Super::Tick( DeltaSeconds );
 	if ( !agent->GetIsSwordDrawn() )
 		agent->DrawSword();
-	if ( !attackCircle->GetEnemiesInCircle().Contains( agent ) )
+	if ( !attackCircle->GetEnemiesInCircle().Contains( agent ) ) {
 		attackCircle->JoinCircle( agent );
+		SetFocus( attackCircle->GetPlayer() );
+	}
 
 	MoveToLocation( attackCircle->GetLocationForAgent( agent ) );
 }

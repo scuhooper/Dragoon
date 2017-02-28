@@ -21,11 +21,13 @@ AttackCircle::AttackCircle( ADragoonCharacter* playerCharacter ) {
 
 void AttackCircle::JoinCircle( AEnemyAgent* attacker ) {
 	// if attacker's score <= available enemy score
-	if ( attacker->GetEnemyScore() <= availableAttackScore ) {
+	if ( attacker->GetEnemyScore() <= availableEnemyScore ) {
 		// add attacker to enemies in circle
 		AssignAgentToSlot( attacker, CheckForClosestAvailableSlot( attacker ) );
 		// reduce available score by attacker's score
 		availableEnemyScore -= attacker->GetEnemyScore();
+		// add enemy to list of enemy's in circle
+		enemiesInCircle.Add( attacker );
 	}
 }
 
@@ -35,8 +37,8 @@ void AttackCircle::UpdateCircleLocation() {
 	/*********
 	!!!!! TESTING BELOW CODE !!!!!
 	*********/
-	for ( auto& Location : circleSlotLocations ) {
-		Location.Value = centerOfCircle + circleSlotOffset[ Location.Key ]; // update the slot location from the center of the circle and it's stored offset for particular slot
+	for ( auto& Location : circleSlotOffset ) {
+		circleSlotLocations.Add( Location.Key, centerOfCircle + Location.Value ); // update the slot location from the center of the circle and it's stored offset for particular slot
 	}
 }
 
@@ -62,8 +64,7 @@ FVector AttackCircle::GetLocationForAgent( AEnemyAgent* agent ) {
 	UpdateCircleLocation();
 
 	EAttackCircleSlot slot = *( circleSlotOccupant.FindKey( agent ) );
-	UE_LOG( LogTemp, Warning, TEXT( "Circle offset vector is %s" ), *circleSlotOffset.Find( slot )->ToString() );
-	return centerOfCircle + ( *circleSlotOffset.Find( slot ) ) * offsetScale;
+	return centerOfCircle + *circleSlotOffset.Find( slot );
 }
 
 bool AttackCircle::CanAgentPerformAttack( int attackScore ) {
@@ -95,6 +96,16 @@ void AttackCircle::Initialize() {
 	availableEnemyScore = maxEnemyScore;
 	availableAttackScore = maxAttackScore;
 
+	// set up slots to not be occupied
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_Front, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_FrontRight, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_FrontLeft, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_Left, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_Right, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_Back, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_BackRight, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_BackLeft, false );
+
 	// set up offset with vectors
 	circleSlotOffset.Add( EAttackCircleSlot::ACS_Front, FVector( 1, 0, 0 ) );
 	circleSlotOffset.Add( EAttackCircleSlot::ACS_FrontRight, FVector( 1, 1, 0 ) );
@@ -108,7 +119,8 @@ void AttackCircle::Initialize() {
 	// normalize vectors then multiply by the scale of the offset
 	for ( auto& pair : circleSlotOffset ) {
 		pair.Value.Normalize();
-		pair.Value * offsetScale;
+		pair.Value *= offsetScale;
+		circleSlotOffset[ pair.Key ] = pair.Value;
 	}
 
 	// establish grid based on character position
@@ -144,11 +156,13 @@ EAttackCircleSlot AttackCircle::CheckForClosestAvailableSlot( AEnemyAgent* reque
 		}
 	}
 
+	freeSlots.Empty();
+
 	// return the closest slot to requester
 	return bestSlot;
 }
 
 void AttackCircle::AssignAgentToSlot( AEnemyAgent* agent, EAttackCircleSlot slot ) {
 		circleSlotOccupant.Add( slot, agent );	// assign agent to slot
-		circleSlotOccupied.Add( slot, true );
+		circleSlotOccupied[ slot ] = true;
 }

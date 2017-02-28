@@ -60,6 +60,8 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 	atk2 = atk3;
 	atk3 = atk.id;
 
+	UE_LOG( LogTemp, Warning, TEXT( "Player is attacking %s" ), *atk.target->GetName() );
+
 	attackNGram[ atk1 ][ atk2 ][ atk3 ]++;
 
 	if ( agentsInCombat.Contains( atk.target ) ) {

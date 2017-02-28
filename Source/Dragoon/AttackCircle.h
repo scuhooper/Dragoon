@@ -27,7 +27,7 @@ class DRAGOON_API AttackCircle
 public:
 	// Holds the maximum enemy score that can be within the circle at any given moment
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
-	int maxEnemyScore;
+	int maxEnemyScore = 16;
 
 	// Holds the maximum enemy attack score that can be taking place within the circle at any given moment
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
@@ -35,7 +35,7 @@ public:
 
 	// Holds the amount in cm that the slots should be away from the center of the circle
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
-	float offsetScale = 250;
+	float offsetScale = 150;
 
 private:
 	// The score available to place new enemies in the circle
