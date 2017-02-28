@@ -28,6 +28,8 @@ void AttackCircle::JoinCircle( AEnemyAgent* attacker ) {
 		availableEnemyScore -= attacker->GetEnemyScore();
 		// add enemy to list of enemy's in circle
 		enemiesInCircle.Add( attacker );
+		// set enemy to be in combat
+		attacker->GetIsInCombat();
 	}
 }
 

@@ -27,3 +27,12 @@ void AEnemyAgent::BeginPlay() {
 void AEnemyAgent::DrawSword() {
 	SheatheUnsheatheSword();
 }
+
+void AEnemyAgent::JoinCombat() {
+	bIsInCombat = true;
+	DrawSword();
+}
+
+void AEnemyAgent::LeaveCombat() {
+	bIsInCombat = false;
+}

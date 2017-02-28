@@ -45,6 +45,10 @@ public:
 
 	void DrawSword();
 
+	void JoinCombat();
+
+	void LeaveCombat();
+
 protected:
 	virtual void BeginPlay();
 

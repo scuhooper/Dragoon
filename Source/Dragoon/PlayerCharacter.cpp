@@ -37,11 +37,21 @@ void APlayerCharacter::PlayerAttack() {
 	// AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, GetActorForwardVector() ) );
 
 	FHitResult hit;
+	TArray<FHitResult> hits;
 	FCollisionQueryParams params( FName( TEXT( "Attack Target Trace" ) ), true, this );
-	ActorLineTraceSingle( hit, GetActorLocation(), GetActorForwardVector() * 500, ECollisionChannel::ECC_Pawn, params );
+	UE_LOG( LogTemp, Warning, TEXT( "Running Line Trace to get player target!" ) );
+	UE_LOG( LogTemp, Warning, TEXT( "Player Forward Vector is %s" ), *GetActorForwardVector().ToString() );
 
-	if ( ( AEnemyAgent* )hit.Actor.Get() ) {
-		AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, ( AEnemyAgent* )hit.Actor.Get() ) );
+	// ActorLineTraceSingle( hit, GetActorLocation() + ( GetActorForwardVector() * 250 ), GetActorForwardVector() * 5000, ECollisionChannel::ECC_Pawn, params )
+	
+	if ( GetWorld()->LineTraceMultiByChannel( hits, GetActorLocation(), GetActorForwardVector() * 5000, ECollisionChannel::ECC_Pawn, params ) ) {
+		for ( auto& target : hits ) {
+			if ( Cast<AEnemyAgent>( target.Actor.Get() ) ) {
+				UE_LOG( LogTemp, Warning, TEXT( "First target hit is %s!" ), *target.Actor.Get()->GetName() );
+				AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, ( AEnemyAgent* )target.Actor.Get() ) );
+				break;
+			}
+		}
 	}
 }
 
