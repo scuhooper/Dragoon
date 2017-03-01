@@ -57,10 +57,6 @@ private:
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
 	TArray<AEnemyAgent*> enemiesInCircle;
 
-	// A hashtable for keeping the world position of the attack circle slots
-	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
-	TMap<EAttackCircleSlot, FVector> circleSlotLocations;
-
 	// A hashtable for keeping the pointer for which enemy is in each slot. Is set to nullptr if no enemy is in slot.
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
 	TMap<EAttackCircleSlot, AEnemyAgent*> circleSlotOccupant;

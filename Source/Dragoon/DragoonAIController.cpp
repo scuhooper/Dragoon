@@ -8,13 +8,14 @@ ADragoonAIController::ADragoonAIController() {
 }
 
 ADragoonAIController::~ADragoonAIController() {
-	// AgentHasDied();
+	// remove all references
 	attackCircle = nullptr;
 	agent = nullptr;
 	game = nullptr;
 }
 
 void ADragoonAIController::AgentHasDied() {
+	// remove agent from attack circle and blackboard
 	attackCircle->RemoveAgentFromCircle( agent );
 	game->blackboard.RemoveAgent( agent );
 }
@@ -23,11 +24,14 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 	// do stuff every frame
 	Super::Tick( DeltaSeconds );
 	
+	/*********
+	!!!!!TESTING BELOW!!!!!
+	*********/
+
 	if ( !attackCircle->GetEnemiesInCircle().Contains( agent ) ) {
 		attackCircle->JoinCircle( agent );
 		if ( attackCircle->GetEnemiesInCircle().Contains( agent ) ) {
 			SetFocus( attackCircle->GetPlayer() );
-			agent->JoinCombat();
 			game->blackboard.HaveAgentJoinCombat( agent );
 		}
 	}
@@ -36,9 +40,12 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 }
 
 void ADragoonAIController::BeginPlay() {
+	// call parent begin play
 	Super::BeginPlay();
+	// setup pointer variables
 	game = ( ADragoonGameMode* )GetWorld()->GetAuthGameMode();
 	agent = ( AEnemyAgent* )GetCharacter();
 	attackCircle = &game->attackCircle;
+	// register agent with blackboard
 	game->blackboard.RegisterAgent( agent );
 }

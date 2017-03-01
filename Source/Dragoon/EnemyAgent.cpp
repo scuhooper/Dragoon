@@ -5,7 +5,9 @@
 #include "EnemyAgent.h"
 
 AEnemyAgent::AEnemyAgent() {
+	// make actor able to tick
 	PrimaryActorTick.bCanEverTick = true;
+	// setup scores for attacks and enemy score
 	enemyScore = 4;
 	quickAttackScore = 3;
 	strongAttackScore = 5;
@@ -13,7 +15,10 @@ AEnemyAgent::AEnemyAgent() {
 }
 
 AEnemyAgent::AEnemyAgent( int score ) {
+	// make actor able to tick
 	PrimaryActorTick.bCanEverTick = true;
+
+	// setup scores for attacks and enemy score
 	enemyScore = score;
 	quickAttackScore = 3;
 	strongAttackScore = 5;
@@ -25,14 +30,17 @@ void AEnemyAgent::BeginPlay() {
 }
 
 void AEnemyAgent::DrawSword() {
-	SheatheUnsheatheSword();
+	SheatheUnsheatheSword(); // equip/unequip sword
 }
 
 void AEnemyAgent::JoinCombat() {
+	// set bool and draw sword
 	bIsInCombat = true;
 	DrawSword();
 }
 
 void AEnemyAgent::LeaveCombat() {
+	// set bool and sheathe sword
 	bIsInCombat = false;
+	DrawSword();
 }
