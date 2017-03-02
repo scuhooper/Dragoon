@@ -2,6 +2,7 @@
 
 #pragma once
 #include "AttackCircle.h"
+#include <deque>	// do not remove this include. this class uses deque containers
 #include "EnemyAgent.h"
 /**
  * 
@@ -23,8 +24,17 @@ private:
 	// 3D array that stores ints derived from attacks. Used for predicting attacks from previous patterns.
 	int attackNGram[ 27 ][ 27 ][ 27 ];
 
+	// deque to be used to store last x amount of attacks
+	std::deque<int> attackHistory;	// deque is used so it can be randomly accessed
+
 	// variables to hold the previous three attacks made indices
 	int atk1 = 0, atk2 = 0, atk3 = 0;
+
+	// bool to start removing an entry from attackHistory when adding a new one
+	bool bIsHistoryFull = false;
+
+	// maximum amount of attacks to store in attack history
+	int maxHistorySize;
 
 public:
 	// default c-tor. not to be used.

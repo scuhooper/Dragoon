@@ -129,6 +129,22 @@ void AttackCircle::Initialize() {
 	UpdateCircleLocation();
 }
 
+void AttackCircle::GetNewSlotForAgent( AEnemyAgent* agent ) {
+	// if agent is not in circle, exit function
+	if ( !enemiesInCircle.Contains( agent ) )
+		return;
+
+	EAttackCircleSlot currentSlot = *circleSlotOccupant.FindKey( agent );
+	EAttackCircleSlot newSlot = CheckForClosestAvailableSlot( agent );
+
+	// remove from current slot
+	circleSlotOccupant.Remove( currentSlot );
+	circleSlotOccupied[ currentSlot ] = false;
+	
+	// setup agent in new slot
+	AssignAgentToSlot( agent, newSlot );
+}
+
 EAttackCircleSlot AttackCircle::CheckForClosestAvailableSlot( AEnemyAgent* requester ) {
 	// setup local variables
 	FVector requesterLocation = requester->GetActorLocation();

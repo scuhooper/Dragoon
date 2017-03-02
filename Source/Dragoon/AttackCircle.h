@@ -142,6 +142,11 @@ public:
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
 	void Initialize();
 
+	/**
+	 * Assigns a new slot to an agent already in the attack circle.
+	 */
+	void GetNewSlotForAgent( AEnemyAgent* agent );
+
 private:
 	/**
 	* Compares the distance squared of all the empty attack circle slots and returns the closest one.

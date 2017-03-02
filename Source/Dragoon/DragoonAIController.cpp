@@ -36,7 +36,14 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 		}
 	}
 
-	MoveToLocation( attackCircle->GetLocationForAgent( agent ) );
+	FVector targetLoc = attackCircle->GetLocationForAgent( agent );
+	FNavLocation navLoc;
+
+	if ( GetWorld()->GetNavigationSystem()->ProjectPointToNavigation( targetLoc, navLoc ) || targetLoc.Z <= agent->GetActorLocation().Z - 50 || targetLoc.Z <= agent->GetActorLocation().Z + 50 )
+		MoveToLocation( targetLoc );
+	else
+		attackCircle->GetNewSlotForAgent( agent );
+
 }
 
 void ADragoonAIController::BeginPlay() {
