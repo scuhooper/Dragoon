@@ -38,11 +38,15 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 
 	FVector targetLoc = attackCircle->GetLocationForAgent( agent );
 	FNavLocation navLoc;
-
-	if ( GetWorld()->GetNavigationSystem()->ProjectPointToNavigation( targetLoc, navLoc ) || targetLoc.Z <= agent->GetActorLocation().Z - 50 || targetLoc.Z <= agent->GetActorLocation().Z + 50 )
+	
+	if ( GetWorld()->GetNavigationSystem()->ProjectPointToNavigation( targetLoc, navLoc ) && navLoc.Location.Z < agent->GetActorLocation().Z + 100  ) {
 		MoveToLocation( targetLoc );
-	else
+	}
+	else {
+		UE_LOG( LogTemp, Warning, TEXT( "Getting a new slot. Old slot was %s" ), *targetLoc.ToString() );
 		attackCircle->GetNewSlotForAgent( agent );
+		UE_LOG( LogTemp, Warning, TEXT( "New slot is %s" ), *attackCircle->GetLocationForAgent( agent ).ToString() );
+	}
 
 }
 

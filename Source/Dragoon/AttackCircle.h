@@ -27,7 +27,7 @@ class DRAGOON_API AttackCircle
 public:
 	// Holds the maximum enemy score that can be within the circle at any given moment
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
-	int maxEnemyScore = 16;
+	int maxEnemyScore = 4;
 
 	// Holds the maximum enemy attack score that can be taking place within the circle at any given moment
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
@@ -90,6 +90,9 @@ public:
 	/** Returns enemiesInCircle **/
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
 	FORCEINLINE TArray<AEnemyAgent*> GetEnemiesInCircle() const { return enemiesInCircle; }
+	/** Returns centerOfCircle **/
+	UFUNCTION( BlueprintCallable, Category = AttackCircle )
+	FORCEINLINE FVector GetCenterOfCircle() const { return centerOfCircle; }
 
 	/**
 	* Handles request from an attacker to join the attack circle
