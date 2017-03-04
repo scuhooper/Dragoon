@@ -25,10 +25,6 @@ AEnemyAgent::AEnemyAgent( int score ) {
 	feintAttackScore = 8;
 }
 
-void AEnemyAgent::BeginPlay() {
-	Super::BeginPlay();
-}
-
 void AEnemyAgent::DrawSword() {
 	SheatheUnsheatheSword(); // equip/unequip sword
 }
@@ -43,4 +39,20 @@ void AEnemyAgent::LeaveCombat() {
 	// set bool and sheathe sword
 	bIsInCombat = false;
 	DrawSword();
+}
+
+void AEnemyAgent::MyTakeDamage( int val ) {
+	// exit if enemy is already dead
+	if ( GetIsDead() )
+		return;
+
+	Super::MyTakeDamage( val );
+	if ( GetIsDead() ) {
+		ADragoonGameMode* game = (ADragoonGameMode*)GetWorld()->GetAuthGameMode();
+		game->blackboard.AgentHasDied( this );
+	}
+}
+
+void AEnemyAgent::BeginPlay() {
+	Super::BeginPlay();
 }

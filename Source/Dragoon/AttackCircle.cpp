@@ -49,6 +49,7 @@ void AttackCircle::RemoveAgentFromCircle( AEnemyAgent* agent ) {
 		if ( slot.Value == agent ) {
 			circleSlotOccupied[ slot.Key ] = false;	// set slot to be unoccupied
 			circleSlotOccupant.Remove( slot.Key );	// remove entry from occupant map
+			availableEnemyScore += agent->GetEnemyScore();
 			return;
 		}
 	}

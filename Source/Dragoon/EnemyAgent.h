@@ -62,6 +62,11 @@ public:
 	*/
 	void LeaveCombat();
 
+	/**
+	 * Enemy agents overriden take damage function
+	 */
+	virtual void MyTakeDamage( int val ) override;
+
 protected:
 	/**
 	* Currently just calls parent's begin play event

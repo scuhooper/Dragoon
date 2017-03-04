@@ -316,7 +316,7 @@ public:
 	 * Will check to see if character has died and will call Dead().
 	 */
 	UFUNCTION( BlueprintCallable, Category = Combat )
-	void MyTakeDamage( int Val );
+	virtual void MyTakeDamage( int Val );
 
 	/**
 	 * Sets bIsDead to true.
@@ -341,4 +341,10 @@ public:
 	 */
 	UFUNCTION( BlueprintCallable, Category = Combat )
 	void AttackWasParried();
+
+	/**
+	 * Calculates damage when overlapped by sword.
+	 */
+	UFUNCTION( Category = Combat )
+	void OnOverlapStart( AActor* thisActor, AActor* otherActor );
 };

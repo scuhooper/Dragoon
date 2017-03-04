@@ -76,6 +76,11 @@ public:
 	 */
 	void RecordPlayerAttack( FAttack atk );
 
+	/**
+	 *
+	 */
+	void AgentHasDied( AEnemyAgent* agent );
+
 private:
 
 };

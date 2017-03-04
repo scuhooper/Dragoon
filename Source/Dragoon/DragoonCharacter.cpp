@@ -12,6 +12,11 @@ ADragoonCharacter::ADragoonCharacter()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
+	// Set mesh to generate overlap events
+	GetMesh()->bGenerateOverlapEvents = true;
+
+	OnActorBeginOverlap.AddDynamic( this, &ADragoonCharacter::OnOverlapStart );
+
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -355,4 +360,23 @@ void ADragoonCharacter::AttackWasParried() {
 	this->FinishedAttacking();
 	Controller->SetIgnoreMoveInput( true );
 	bIsRecovering = true;
+}
+
+void ADragoonCharacter::OnOverlapStart( AActor* thisActor, AActor* otherActor ) {
+	if ( otherActor->GetOwner() != this ) {
+		if ( Cast<ADragoonCharacter>( otherActor->GetOwner() ) ) {
+			ADragoonCharacter* otherChar = ( ADragoonCharacter* )otherActor->GetOwner();
+			if ( otherActor == otherChar->sword ) {
+				if ( otherChar->GetIsAttacking() ) {
+					hitDirection = ( EAttackDirection )otherChar->GetDirectionOfAttack();
+					if ( otherChar->GetIsStrongAttacking() ) {
+						MyTakeDamage( otherChar->damage * otherChar->strongAttackDamageMultiplier );
+					}
+					else {
+						MyTakeDamage( otherChar->damage );
+					}
+				}
+			}
+		}
+	}
 }

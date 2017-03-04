@@ -95,3 +95,8 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 		AIController->test;	// testing access to ai controller. needs to be updated with actual logic for reacting to attacks
 	}
 }
+
+void DragoonAIBlackboard::AgentHasDied( AEnemyAgent* agent ) {
+	ADragoonAIController* AIController = ( ADragoonAIController* )agent->GetController();
+	AIController->AgentHasDied();
+}

@@ -16,7 +16,9 @@ ADragoonAIController::~ADragoonAIController() {
 
 void ADragoonAIController::AgentHasDied() {
 	// remove agent from attack circle and blackboard
-	attackCircle->RemoveAgentFromCircle( agent );
+	if(attackCircle->GetEnemiesInCircle().Contains(agent))
+		attackCircle->RemoveAgentFromCircle( agent );
+
 	game->blackboard.RemoveAgent( agent );
 }
 
