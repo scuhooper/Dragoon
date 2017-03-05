@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Dragoon.h"
+#include "AttackState.h"
 #include "DragoonAIController.h"
 
 ADragoonAIController::ADragoonAIController() {
@@ -12,6 +13,7 @@ ADragoonAIController::~ADragoonAIController() {
 	attackCircle = nullptr;
 	agent = nullptr;
 	game = nullptr;
+	delete currentState;
 	currentState = nullptr;
 }
 
@@ -21,6 +23,9 @@ void ADragoonAIController::AgentHasDied() {
 		attackCircle->RemoveAgentFromCircle( agent );
 
 	game->blackboard.RemoveAgent( agent );
+
+	UnPossess();
+	Destroy();
 }
 
 void ADragoonAIController::AttackPlayer() {
@@ -30,6 +35,9 @@ void ADragoonAIController::AttackPlayer() {
 }
 
 void ADragoonAIController::Tick( float DeltaSeconds ) {
+	if ( agent->GetIsDead() )
+		return;
+
 	// do stuff every frame
 	Super::Tick( DeltaSeconds );
 	
@@ -42,6 +50,7 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 		if ( attackCircle->GetEnemiesInCircle().Contains( agent ) ) {
 			SetFocus( attackCircle->GetPlayer() );
 			game->blackboard.HaveAgentJoinCombat( agent );
+			currentState->EnterState( agent );
 		}
 	}
 
@@ -57,6 +66,8 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 		UE_LOG( LogTemp, Warning, TEXT( "New slot is %s" ), *attackCircle->GetLocationForAgent( agent ).ToString() );
 	}
 
+	if ( FVector::DistSquared( agent->GetActorLocation(), targetLoc ) < 40000 )
+		currentState->StateTick( agent, DeltaSeconds );
 }
 
 void ADragoonAIController::BeginPlay() {
@@ -68,4 +79,6 @@ void ADragoonAIController::BeginPlay() {
 	attackCircle = &game->attackCircle;
 	// register agent with blackboard
 	game->blackboard.RegisterAgent( agent );
+
+	currentState = (State*)new AttackState();
 }

@@ -73,6 +73,8 @@ public:
 
 	void ParryAttack( EAttackDirection dir );
 
+	bool IsBusy();
+
 protected:
 	/**
 	* Currently just calls parent's begin play event

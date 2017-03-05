@@ -82,6 +82,10 @@ void AEnemyAgent::ParryAttack( EAttackDirection dir ) {
 	bIsParrying = true;
 }
 
+bool AEnemyAgent::IsBusy() {
+	return IsActionInProgress();
+}
+
 void AEnemyAgent::BasicAttack() {
 	AttackDirectionChosen();	// get the actual vector for attack direction
 	bIsAttacking = true;	// set attacking to true for animBP
