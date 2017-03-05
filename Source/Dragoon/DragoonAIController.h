@@ -3,6 +3,7 @@
 #pragma once
 
 #include "EnemyAgent.h"
+#include "State.h"
 #include "DragoonGameMode.h"
 #include "AttackCircle.h"
 #include "AIController.h"
@@ -29,6 +30,9 @@ private:
 
 	// reference to the game mode
 	ADragoonGameMode* game;
+
+	// pointer to the current state of FSM for this controller/agent
+	State* currentState;
 	
 public:
 	// default c-tor
@@ -41,6 +45,8 @@ public:
 	 * Update the attack circle and blackboard to remove controlled agent
 	 */
 	void AgentHasDied();
+
+	void AttackPlayer();
 
 protected:
 	/**

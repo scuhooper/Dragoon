@@ -67,11 +67,21 @@ public:
 	 */
 	virtual void MyTakeDamage( int val ) override;
 
+	int ChooseAttack();
+
+	void PerformAttack( int attackToPerform );
+
+	void ParryAttack( EAttackDirection dir );
+
 protected:
 	/**
 	* Currently just calls parent's begin play event
 	*/
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
+
+	virtual void BasicAttack() override;
+
+	virtual void AttackDirectionChosen() override;
 
 };
 

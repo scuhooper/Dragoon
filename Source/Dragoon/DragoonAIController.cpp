@@ -12,6 +12,7 @@ ADragoonAIController::~ADragoonAIController() {
 	attackCircle = nullptr;
 	agent = nullptr;
 	game = nullptr;
+	currentState = nullptr;
 }
 
 void ADragoonAIController::AgentHasDied() {
@@ -20,6 +21,12 @@ void ADragoonAIController::AgentHasDied() {
 		attackCircle->RemoveAgentFromCircle( agent );
 
 	game->blackboard.RemoveAgent( agent );
+}
+
+void ADragoonAIController::AttackPlayer() {
+	int attackChoice = agent->ChooseAttack();
+	if ( attackCircle->CanAgentPerformAttack( attackChoice ) )
+		agent->PerformAttack( attackChoice );
 }
 
 void ADragoonAIController::Tick( float DeltaSeconds ) {
