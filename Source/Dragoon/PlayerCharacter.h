@@ -16,18 +16,24 @@ class DRAGOON_API APlayerCharacter : public ADragoonCharacter
 	GENERATED_BODY()
 	
 private:
+	// reference to existing attack circle instance
 	AttackCircle* attackCircle;
-
+	// reference to blackboard instance
 	DragoonAIBlackboard* AIBlackboard = nullptr;
 	
 public:
 	APlayerCharacter();
 	~APlayerCharacter();
 
-	virtual void BeginPlay();
+	// sets up the variables for class
+	virtual void BeginPlay() override;
 
 protected:
+	/**
+	 * Calls the begin attack function. Determines attack specifics and updates blackboard if an enemy is being attacked.
+	 */
 	void PlayerAttack();
 
+	// setup control mappings
 	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
 };

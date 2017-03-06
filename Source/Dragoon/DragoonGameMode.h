@@ -11,8 +11,10 @@ class ADragoonGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	// instance of attack circle
 	AttackCircle attackCircle;
 
+	// instance of blackboard
 	DragoonAIBlackboard blackboard;
 
 public:

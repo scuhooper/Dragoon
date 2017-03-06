@@ -3,6 +3,8 @@
 #pragma once
 
 #include "EnemyAgent.h"
+#include "State.h"
+#include "DragoonGameMode.h"
 #include "AttackCircle.h"
 #include "AIController.h"
 #include "DragoonAIController.generated.h"
@@ -16,19 +18,44 @@ class DRAGOON_API ADragoonAIController : public AAIController
 	GENERATED_BODY()
 	
 public:
+	// testing..
 	int test;
 
 private:
+	// reference to agent being controlled
 	AEnemyAgent* agent;
 
+	// reference to the main attack circle instance
 	AttackCircle* attackCircle;
+
+	// reference to the game mode
+	ADragoonGameMode* game;
+
+	// pointer to the current state of FSM for this controller/agent
+	State* currentState;
 	
 public:
+	// default c-tor
 	ADragoonAIController();
+
+	// Destructor that sets pointers to nullptrs
 	~ADragoonAIController();
 
+	/**
+	 * Update the attack circle and blackboard to remove controlled agent
+	 */
+	void AgentHasDied();
+
+	void AttackPlayer();
+
 protected:
+	/**
+	 * Updates enemy logic every frame. Used for moving AI.
+	 */
 	virtual void Tick( float DeltaSeconds ) override;
 
+	/**
+	 * Event runs once and sets up variables for controller. Registers the controlled agent with the blackboard.
+	 */
 	virtual void BeginPlay() override;
 };

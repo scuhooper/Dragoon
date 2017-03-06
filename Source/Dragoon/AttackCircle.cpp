@@ -5,44 +5,51 @@
 
 AttackCircle::AttackCircle()
 {
+	// set pointer to nullptr
+	player = nullptr;
 }
 
 AttackCircle::~AttackCircle()
 {
+	// set pointers to null or remove references
 	player = nullptr;
+	circleSlotOccupant.Empty();
 }
 
 AttackCircle::AttackCircle( ADragoonCharacter* playerCharacter ) {
+	// set player pointer and initialize the circle's arrays
 	player = playerCharacter;
 	Initialize();
 }
 
 void AttackCircle::JoinCircle( AEnemyAgent* attacker ) {
 	// if attacker's score <= available enemy score
-	if ( attacker->GetEnemyScore() <= availableAttackScore ) {
+	if ( attacker->GetEnemyScore() <= availableEnemyScore ) {
 		// add attacker to enemies in circle
-		circleSlotOccupant[ CheckForClosestAvailableSlot( attacker ) ] = attacker;
+		AssignAgentToSlot( attacker, CheckForClosestAvailableSlot( attacker ) );
 		// reduce available score by attacker's score
 		availableEnemyScore -= attacker->GetEnemyScore();
+		// add enemy to list of enemy's in circle
+		enemiesInCircle.Add( attacker );
+		// set enemy to be in combat
+		attacker->GetIsInCombat();
 	}
 }
 
 void AttackCircle::UpdateCircleLocation() {
-	centerOfCircle = player->GetActorLocation();	// circle is centered on wherever the player is
+	if ( !player )	// check if player has bee set
+		return;
 
-													/*********
-													!!!!! TESTING BELOW CODE !!!!!
-													*********/
-	for ( auto& Location : circleSlotLocations ) {
-		Location.Value = centerOfCircle + circleSlotOffset[ Location.Key ]; // update the slot location from the center of the circle and it's stored offset for particular slot
-	}
+	centerOfCircle = player->GetActorLocation();	// circle is centered on wherever the player is
 }
 
 void AttackCircle::RemoveAgentFromCircle( AEnemyAgent* agent ) {
 	// check for which slot agent belongs to and then remove them from it
 	for ( auto& slot : circleSlotOccupant ) {
 		if ( slot.Value == agent ) {
-			slot.Value = nullptr;
+			circleSlotOccupied[ slot.Key ] = false;	// set slot to be unoccupied
+			circleSlotOccupant.Remove( slot.Key );	// remove entry from occupant map
+			availableEnemyScore += agent->GetEnemyScore();
 			return;
 		}
 	}
@@ -53,20 +60,21 @@ void AttackCircle::RemoveAgentFromCircle( AEnemyAgent* agent ) {
 
 FVector AttackCircle::GetLocationForAgent( AEnemyAgent* agent ) {
 	// check for which slot agent is assigned to and then return the location of that slot
-	for ( auto& Location : circleSlotOccupant ) {
-		if ( Location.Value == agent ) {
-			return circleSlotLocations[ Location.Key ];
-		}
-	}
+	if ( ( !circleSlotOccupant.FindKey( agent ) ) )
+		return agent->GetActorLocation();	// if requester is not assigned a slot, return its position
 
-	// handling for agent not found
-	UE_LOG( LogTemp, Error, TEXT( "Agent %s is not assigned to a slot on the attack circle!" ), *agent->GetName() );
-	return agent->GetActorLocation();
+	UpdateCircleLocation();	// update circle with player's latest location
+
+	// get which slot is assigned to requester
+	EAttackCircleSlot slot = *( circleSlotOccupant.FindKey( agent ) );
+
+	// return the center plus offset of slot
+	return centerOfCircle + *circleSlotOffset.Find( slot );
 }
 
 bool AttackCircle::CanAgentPerformAttack( int attackScore ) {
 	if ( attackScore <= availableAttackScore ) {	// check if attack will be valid before allowing it
-		availableAttackScore -= attackScore;
+		availableAttackScore -= attackScore;	// reduce available attack score
 		return true;
 	}
 	else
@@ -82,16 +90,24 @@ void AttackCircle::AgentAttackFinished( int attackScore ) {
 }
 
 void AttackCircle::SetPlayer( ADragoonCharacter* newPlayer ) {
-	player = newPlayer;
+	player = newPlayer;	// update the player reference to supplied pointer
 }
 
 void AttackCircle::Initialize() {
-	if ( player == nullptr )
-		return;
 
 	// set available scores to max scores
 	availableEnemyScore = maxEnemyScore;
 	availableAttackScore = maxAttackScore;
+
+	// set up slots to not be occupied
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_Front, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_FrontRight, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_FrontLeft, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_Left, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_Right, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_Back, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_BackRight, false );
+	circleSlotOccupied.Add( EAttackCircleSlot::ACS_BackLeft, false );
 
 	// set up offset with vectors
 	circleSlotOffset.Add( EAttackCircleSlot::ACS_Front, FVector( 1, 0, 0 ) );
@@ -106,39 +122,49 @@ void AttackCircle::Initialize() {
 	// normalize vectors then multiply by the scale of the offset
 	for ( auto& pair : circleSlotOffset ) {
 		pair.Value.Normalize();
-		pair.Value * offsetScale;
+		pair.Value *= offsetScale;
+		circleSlotOffset[ pair.Key ] = pair.Value;
 	}
 
 	// establish grid based on character position
 	UpdateCircleLocation();
+}
 
-	circleSlotOccupant.Add( EAttackCircleSlot::ACS_Front, nullptr );
-	circleSlotOccupant.Add( EAttackCircleSlot::ACS_FrontRight, nullptr );
-	circleSlotOccupant.Add( EAttackCircleSlot::ACS_FrontLeft, nullptr );
-	circleSlotOccupant.Add( EAttackCircleSlot::ACS_Left, nullptr );
-	circleSlotOccupant.Add( EAttackCircleSlot::ACS_Right, nullptr );
-	circleSlotOccupant.Add( EAttackCircleSlot::ACS_Back, nullptr );
-	circleSlotOccupant.Add( EAttackCircleSlot::ACS_BackRight, nullptr );
-	circleSlotOccupant.Add( EAttackCircleSlot::ACS_BackLeft, nullptr );
+void AttackCircle::GetNewSlotForAgent( AEnemyAgent* agent ) {
+	// if agent is not in circle, exit function
+	if ( !enemiesInCircle.Contains( agent ) )
+		return;
+
+	EAttackCircleSlot currentSlot = *circleSlotOccupant.FindKey( agent );
+	EAttackCircleSlot newSlot = CheckForClosestAvailableSlot( agent );
+
+	// remove from current slot
+	circleSlotOccupant.Remove( currentSlot );
+	circleSlotOccupied[ currentSlot ] = false;
+	
+	// setup agent in new slot
+	AssignAgentToSlot( agent, newSlot );
 }
 
 EAttackCircleSlot AttackCircle::CheckForClosestAvailableSlot( AEnemyAgent* requester ) {
+	// setup local variables
 	FVector requesterLocation = requester->GetActorLocation();
-	EAttackCircleSlot bestSlot;
+	EAttackCircleSlot bestSlot = EAttackCircleSlot::ACS_Front;
 	TArray<EAttackCircleSlot> freeSlots;
 	float bestDistance = NULL;	// start with a null distance
 
-								// get list of empty spots
-	for ( auto& Location : circleSlotOccupant ) {
+	// get list of empty spots
+	for ( auto& Location : circleSlotOccupied ) {
 		// check TMap for empty slots to add to array
-		if ( Location.Value == nullptr )
+		if ( !Location.Value )
 			freeSlots.Add( Location.Key );
 	}
 
+	float currentDistance;
 	// check empty slots for shortest distance to requester
 	for ( auto& slot : freeSlots ) {
 		// calculate the distance squared
-		float currentDistance = FVector::DistSquared( requesterLocation, circleSlotLocations[ slot ] );
+		currentDistance = FVector::DistSquared( requesterLocation, centerOfCircle + circleSlotOffset[ slot ] );
 
 		if ( bestDistance == NULL ) {	// if bestDistance is null, this is the closest spot
 			bestDistance = currentDistance;
@@ -150,16 +176,13 @@ EAttackCircleSlot AttackCircle::CheckForClosestAvailableSlot( AEnemyAgent* reque
 		}
 	}
 
+	freeSlots.Empty();	// destroy array when finished
+
 	// return the closest slot to requester
 	return bestSlot;
 }
 
 void AttackCircle::AssignAgentToSlot( AEnemyAgent* agent, EAttackCircleSlot slot ) {
-	// error check for if the slot is currently assigned to another agent
-	if ( circleSlotOccupant[ slot ] != nullptr ) {
-		UE_LOG( LogTemp, Error, TEXT( "Attempted to assign agent %s to an attack circle slot that was not empty" ), *agent->GetName() );
-	}
-	else {
-		circleSlotOccupant[ slot ] = agent;	// assign agent to slot
-	}
+		circleSlotOccupant.Add( slot, agent );	// assign agent to slot
+		circleSlotOccupied[ slot ] = true;	// mark slot as occupied
 }
