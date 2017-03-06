@@ -107,7 +107,7 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Combat )
 	float strongAttackDamageMultiplier;
 
-private:
+protected:
 	/// character state booleans
 	bool bIsSwordDrawn = false;
 	bool bIsStrongAttack = false;
@@ -158,7 +158,7 @@ protected:
 	 * Handler for attack button pressed.
 	 * Sets slow-motion effect, disables movement input, and toggles getting attack direction input
 	 */
-	void BasicAttack();
+	virtual void BasicAttack();
 
 	/**
 	 * Handler for attack button released
@@ -228,7 +228,7 @@ protected:
 	 * Call DetermineAttackDirection with the normalized 2D vector.
 	 * Turns slow-motion effect off.
 	 */
-	void AttackDirectionChosen();
+	virtual void AttackDirectionChosen();
 
 	/**
 	 * Converts X and Y value of vec to their respective enum equivalents.
@@ -316,7 +316,7 @@ public:
 	 * Will check to see if character has died and will call Dead().
 	 */
 	UFUNCTION( BlueprintCallable, Category = Combat )
-	void MyTakeDamage( int Val );
+	virtual void MyTakeDamage( int Val );
 
 	/**
 	 * Sets bIsDead to true.
@@ -341,4 +341,10 @@ public:
 	 */
 	UFUNCTION( BlueprintCallable, Category = Combat )
 	void AttackWasParried();
+
+	/**
+	 * Calculates damage when overlapped by sword.
+	 */
+	UFUNCTION( Category = Combat )
+	void OnOverlapStart( AActor* thisActor, AActor* otherActor );
 };

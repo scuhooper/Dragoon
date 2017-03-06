@@ -27,7 +27,7 @@ class DRAGOON_API AttackCircle
 public:
 	// Holds the maximum enemy score that can be within the circle at any given moment
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
-	int maxEnemyScore;
+	int maxEnemyScore = 4;
 
 	// Holds the maximum enemy attack score that can be taking place within the circle at any given moment
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
@@ -35,7 +35,7 @@ public:
 
 	// Holds the amount in cm that the slots should be away from the center of the circle
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = AttackCircle )
-	float offsetScale = 250;
+	float offsetScale = 150;
 
 private:
 	// The score available to place new enemies in the circle
@@ -56,10 +56,6 @@ private:
 	// An array of all enemies currently within the circle
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
 	TArray<AEnemyAgent*> enemiesInCircle;
-
-	// A hashtable for keeping the world position of the attack circle slots
-	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
-	TMap<EAttackCircleSlot, FVector> circleSlotLocations;
 
 	// A hashtable for keeping the pointer for which enemy is in each slot. Is set to nullptr if no enemy is in slot.
 	UPROPERTY( VisibleAnywhere, Category = AttackCircle )
@@ -94,6 +90,9 @@ public:
 	/** Returns enemiesInCircle **/
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
 	FORCEINLINE TArray<AEnemyAgent*> GetEnemiesInCircle() const { return enemiesInCircle; }
+	/** Returns centerOfCircle **/
+	UFUNCTION( BlueprintCallable, Category = AttackCircle )
+	FORCEINLINE FVector GetCenterOfCircle() const { return centerOfCircle; }
 
 	/**
 	* Handles request from an attacker to join the attack circle
@@ -145,6 +144,11 @@ public:
 	*/
 	UFUNCTION( BlueprintCallable, Category = AttackCircle )
 	void Initialize();
+
+	/**
+	 * Assigns a new slot to an agent already in the attack circle.
+	 */
+	void GetNewSlotForAgent( AEnemyAgent* agent );
 
 private:
 	/**

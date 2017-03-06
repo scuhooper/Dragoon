@@ -9,23 +9,28 @@ APlayerCharacter::APlayerCharacter() {
 }
 
 APlayerCharacter::~APlayerCharacter() {
+	// remove references
 	attackCircle = nullptr;
+	AIBlackboard = nullptr;
 }
 
 void APlayerCharacter::BeginPlay() {
 	Super::BeginPlay();
 
+	// setup attack circle with player
 	ADragoonGameMode* game = ( ADragoonGameMode* )GetWorld()->GetAuthGameMode();
 	attackCircle = &game->attackCircle;
 	attackCircle->SetPlayer( this );
 	attackCircle->Initialize();
 
+	// get reference to blackboard
 	AIBlackboard = &game->blackboard;
 }
 
 void APlayerCharacter::PlayerAttack() {
 	BeginAttack();
 
+	// determine type of attack
 	EAttackType type;
 	if ( GetIsStrongAttacking() )
 		type = EAttackType::AT_Strong;
@@ -34,14 +39,21 @@ void APlayerCharacter::PlayerAttack() {
 	else
 		type = EAttackType::AT_Quick;
 
-	// AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, GetActorForwardVector() ) );
-
+	// local vars for line trace
 	FHitResult hit;
+	TArray<FHitResult> hits;
 	FCollisionQueryParams params( FName( TEXT( "Attack Target Trace" ) ), true, this );
-	ActorLineTraceSingle( hit, GetActorLocation(), GetActorForwardVector() * 500, ECollisionChannel::ECC_Pawn, params );
-
-	if ( ( AEnemyAgent* )hit.Actor.Get() ) {
-		AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, ( AEnemyAgent* )hit.Actor.Get() ) );
+	
+	// perform line trace from player extending out forward vector
+	if ( GetWorld()->LineTraceMultiByChannel( hits, GetActorLocation(), GetActorForwardVector() * 5000, ECollisionChannel::ECC_Pawn, params ) ) {
+		// cycle through hit objects until an enemy is found
+		for ( auto& target : hits ) {
+			if ( Cast<AEnemyAgent>( target.Actor.Get() ) ) {
+				// send attack information to blackboard because enemy was attacked and exit loop
+				AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, ( AEnemyAgent* )target.Actor.Get() ) );
+				break;
+			}
+		}
 	}
 }
 

@@ -13,6 +13,7 @@ ADragoonGameMode::ADragoonGameMode()
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 
+	// create objects for use by AI systems
 	attackCircle = AttackCircle();
-	blackboard = DragoonAIBlackboard( &attackCircle );
+	blackboard = DragoonAIBlackboard( &attackCircle );	// uses the attack circle made on previous line
 }
