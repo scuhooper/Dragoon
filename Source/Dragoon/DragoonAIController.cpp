@@ -50,6 +50,8 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 		if ( attackCircle->GetEnemiesInCircle().Contains( agent ) ) {
 			SetFocus( attackCircle->GetPlayer() );
 			game->blackboard.HaveAgentJoinCombat( agent );
+
+			currentState = ( State* )new AttackState();
 			currentState->EnterState( agent );
 		}
 	}
@@ -66,8 +68,9 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 		UE_LOG( LogTemp, Warning, TEXT( "New slot is %s" ), *attackCircle->GetLocationForAgent( agent ).ToString() );
 	}
 
-	if ( FVector::DistSquared( agent->GetActorLocation(), targetLoc ) < 40000 )
-		currentState->StateTick( agent, DeltaSeconds );
+	if ( FVector::DistSquared( agent->GetActorLocation(), targetLoc ) < 22500 )
+		if(currentState)
+			currentState->StateTick( agent, DeltaSeconds );
 }
 
 void ADragoonAIController::BeginPlay() {
@@ -79,6 +82,5 @@ void ADragoonAIController::BeginPlay() {
 	attackCircle = &game->attackCircle;
 	// register agent with blackboard
 	game->blackboard.RegisterAgent( agent );
-
-	currentState = (State*)new AttackState();
+	currentState = nullptr;
 }

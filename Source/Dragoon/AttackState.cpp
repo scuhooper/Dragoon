@@ -26,6 +26,9 @@ void AttackState::StateTick( AEnemyAgent* agent, float deltaSeconds ) {
 		return;
 	}
 
+	if ( agent->IsBusy() )
+		return;
+
 	ADragoonAIController* controller = ( ADragoonAIController* )agent->GetController();
 	controller->AttackPlayer();
 	timeBetweenAttacks = FMath::FRandRange( 3.0f, 5.0f );

@@ -330,6 +330,10 @@ bool ADragoonCharacter::IsActionInProgress() {
 }
 
 void ADragoonCharacter::MyTakeDamage( int Val ) {
+	FinishedAttacking();
+	FinishedDodging();
+	FinishedParrying();
+
 	if ( bIsHurt )
 		return;
 
@@ -357,7 +361,7 @@ void ADragoonCharacter::FinishedRecovering() {
 }
 
 void ADragoonCharacter::AttackWasParried() {
-	this->FinishedAttacking();
+	FinishedAttacking();
 	Controller->SetIgnoreMoveInput( true );
 	bIsRecovering = true;
 }
