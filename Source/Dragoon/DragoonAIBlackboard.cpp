@@ -92,7 +92,7 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 	if ( agentsInCombat.Contains( atk.target ) ) {
 		// make target react to incoming attack
 		ADragoonAIController* AIController = (ADragoonAIController*)atk.target->GetController();
-		AIController->test;	// testing access to ai controller. needs to be updated with actual logic for reacting to attacks
+		// testing access to ai controller. needs to be updated with actual logic for reacting to attacks
 	}
 }
 
