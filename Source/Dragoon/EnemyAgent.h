@@ -14,7 +14,18 @@ class DRAGOON_API AEnemyAgent : public ADragoonCharacter
 	GENERATED_BODY()
 	
 public:
-	
+	// array of waypoints used to have agent patrol a certain path
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = PatrolState )
+	TArray<FVector> waypoints;
+
+	// position which a guard should protect
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = GuardState )
+	FVector guardPost = FVector::ZeroVector;
+
+	// should the agent wait once they arrive at waypoints
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = PatrolState )
+	bool bIsPatrolContinuous = true;
+
 private:
 	/**
 	 * A number to reflect the enemie's strength when joining the attack circle of a player
