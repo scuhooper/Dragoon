@@ -21,23 +21,27 @@ void AlertState::EnterState( AEnemyAgent* agent ) {
 
 	// have agent join the blackboard list for agents ready for combat
 	controller->GetGameMode()->blackboard.HaveAgentJoinCombat( agent );
-	controller->targetLoc = FVector( 50000, 50000, 0 );
 }
 
 void AlertState::StateTick( AEnemyAgent* agent, float DeltaSeconds ) {
+	if ( agent->IsBusy() )
+		return;
+
 	// stay near player, but keep distance further out than attack circle
 	ADragoonAIController* controller = ( ADragoonAIController* )agent->GetController();
-	FNavLocation navLoc;
-	if ( !controller->navSystem->ProjectPointToNavigation( controller->targetLoc, navLoc ) ) {
-		controller->navSystem->GetRandomReachablePointInRadius( controller->GetAttackCircle()->GetPlayer()->GetActorLocation(), 1, navLoc );
-		controller->targetLoc = navLoc.Location * FMath::FRandRange( minDistanceFromPlayer, maxDistanceFromPlayer );
-	}
-	else
-		controller->targetLoc = navLoc.Location;
+	// subtract agent from player to get the vector for agent going away from the player. (player - agent = vector towards player from agent)
+	FVector vectorAwayFromPlayer = agent->GetActorLocation() - controller->GetAttackCircle()->GetPlayer()->GetActorLocation();
+
+	// get current distance from player and normalize the vector
+	float currentDistanceAway = vectorAwayFromPlayer.Size();
+	vectorAwayFromPlayer.Normalize();
+
+	// figure out a point away from the agent to get the preferred distance away from the player
+	controller->targetLoc = agent->GetActorLocation() + ( vectorAwayFromPlayer * ( FMath::FRandRange( minDistanceFromPlayer, maxDistanceFromPlayer ) - currentDistanceAway ) );
 
 	// check if we can join attack circle to attack player
 	if ( controller->GetAttackCircle()->CanAgentJoinCircle( agent ) )
-		controller->SwapState( ( State* )new AttackState() );	// TODO add in method for changing states, needs to delete old state and set a new state
+		controller->SwapState( ( State* )new AttackState() );
 }
 
 void AlertState::ExitState( AEnemyAgent* agent ) {

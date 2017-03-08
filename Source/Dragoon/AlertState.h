@@ -26,7 +26,7 @@ public:
 	virtual void EnterState( AEnemyAgent* agent );
 
 	/**
-	* Checks if the agent can join the attack circle.
+	* Checks if the agent can join the attack circle. Makes the agent stay a preferred distance away from the player.
 	* @param agent	The agent who is currently using this state for behavior.
 	* @param deltaSeconds	The amount of time that has passed since the last tick of the game engine
 	*/
