@@ -88,6 +88,19 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 	// update the n gram array to have another reference to attack sequence
 	attackNGram[ atk1 ][ atk2 ][ atk3 ]++;
 
+	// update history deque with new attack
+	if ( !bIsHistoryFull ) {
+		attackHistory.push_back( atk3 );
+		// check if history is now at our max size
+		if ( attackHistory.size() == maxHistorySize )
+			bIsHistoryFull = true;
+	}
+	else {
+		// remove oldest entry (will be the first entry as we add to the back), and add new attack to back of history
+		attackHistory.pop_front();
+		attackHistory.push_back( atk3 );
+	}
+
 	// call agent behavior to respond to attack if it is in combat
 	if ( agentsInCombat.Contains( atk.target ) ) {
 		// make target react to incoming attack
@@ -97,6 +110,41 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 }
 
 void DragoonAIBlackboard::AgentHasDied( AEnemyAgent* agent ) {
+	// notify controller that agent has died
 	ADragoonAIController* AIController = ( ADragoonAIController* )agent->GetController();
 	AIController->AgentHasDied();
+}
+
+void DragoonAIBlackboard::PredictNextAttack() {
+	if ( !bIsHistoryUsed ) {
+		if ( attackHistory.size() >= 3 )
+			bIsHistoryUsed = true;
+	}
+	else {
+		// map to contain attack IDs and the amount of times they appear in recent history and in total
+		TMap<int, int> historyOccurences;
+
+		// check for matching patterns to last two attacks
+		for ( int i = 0; i < attackHistory.size() - 2; i++ ) {
+			if ( attackHistory[ i ] == atk2 ) {
+				if ( attackHistory[ i + 1 ] == atk3 ) {
+					// add an occurence for the next value in history to the map
+					if ( historyOccurences.Contains( attackHistory[ i + 2 ] ) )
+						historyOccurences[ attackHistory[ i + 2 ] ]++;
+					else
+						historyOccurences.Add( attackHistory[ i + 2 ], 1 );
+				}
+			}
+		}
+
+		// map to contain attack occurences from the entire playtime
+		TMap<int, int> cumulativeAttackOccurences;
+		for ( int i = 0; i < 27; i++ ) {
+			// add any attack that has more than 0 occurences to map
+			if ( attackNGram[ atk2 ][ atk3 ][ i ] > 0 )
+				cumulativeAttackOccurences.Add( i, attackNGram[ atk2 ][ atk3 ][ i ] );
+		}
+
+
+	}
 }
