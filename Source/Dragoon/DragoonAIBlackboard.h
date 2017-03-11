@@ -40,10 +40,17 @@ private:
 	bool bIsHistoryUsed = false;
 
 	// how much recent history should account for
-	float historyWeight = 0.5f;
+	int historyWeight = 2;
 
-	// how much old events should account for
-	float attackTotalsWeight = 0.5f;
+	// the probability of an unknown or random attack
+	float weightForRandomAttack = 0.2f;
+
+	// indices for most occurences
+	int mostOccurencesIndex1 = -1;
+	int mostOccurencesIndex2 = -1;
+	int mostOccurencesIndex3 = -1;
+
+	int nextAttackPrediction;
 
 public:
 	// default c-tor. not to be used.
@@ -92,4 +99,6 @@ public:
 
 protected:
 	void PredictNextAttack();
+
+	void CalculateHighestAttackOccurences( TMap<int,int> &occurenceMap, int &currentIndex );
 };
