@@ -30,11 +30,27 @@ private:
 	// variables to hold the previous three attacks made indices
 	int atk1 = 0, atk2 = 0, atk3 = 0;
 
-	// bool to start removing an entry from attackHistory when adding a new one
+	// maximum amount of attacks to store in attack history
+	int maxHistorySize = 50;
+
+	// bool to state if attacks need to be removed from the deque when new ones are added
 	bool bIsHistoryFull = false;
 
-	// maximum amount of attacks to store in attack history
-	int maxHistorySize;
+	// whether the information from history should be added to prediction loop (cannot be true until 3 attacks are in history)
+	bool bIsHistoryUsed = false;
+
+	// how much recent history should account for
+	int historyWeight = 2;
+
+	// the probability of an unknown or random attack
+	float weightForRandomAttack = 0.2f;
+
+	// indices for most occurences
+	int mostOccurencesIndex1 = -1;
+	int mostOccurencesIndex2 = -1;
+	int mostOccurencesIndex3 = -1;
+
+	int nextAttackPrediction;
 
 public:
 	// default c-tor. not to be used.
@@ -81,6 +97,8 @@ public:
 	 */
 	void AgentHasDied( AEnemyAgent* agent );
 
-private:
+protected:
+	void PredictNextAttack();
 
+	void CalculateHighestAttackOccurences( TMap<int,int> &occurenceMap, int &currentIndex );
 };

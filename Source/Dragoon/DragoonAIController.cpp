@@ -2,6 +2,7 @@
 
 #include "Dragoon.h"
 #include "AttackState.h"
+#include "AlertState.h"
 #include "DragoonAIController.h"
 
 ADragoonAIController::ADragoonAIController() {
@@ -34,6 +35,13 @@ void ADragoonAIController::AttackPlayer() {
 		agent->PerformAttack( attackChoice );
 }
 
+void ADragoonAIController::SwapState( State* newState ) {
+	if ( newState ) {
+		nextState = newState;
+		bIsStateChangeReady = true;
+	}
+}
+
 void ADragoonAIController::Tick( float DeltaSeconds ) {
 	if ( agent->GetIsDead() )
 		return;
@@ -45,42 +53,50 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 	!!!!!TESTING BELOW!!!!!
 	*********/
 
-	if ( !attackCircle->GetEnemiesInCircle().Contains( agent ) ) {
-		attackCircle->JoinCircle( agent );
-		if ( attackCircle->GetEnemiesInCircle().Contains( agent ) ) {
-			SetFocus( attackCircle->GetPlayer() );
-			game->blackboard.HaveAgentJoinCombat( agent );
+	if ( currentState )
+		currentState->StateTick( agent, DeltaSeconds );
 
-			currentState = ( State* )new AttackState();
-			currentState->EnterState( agent );
-		}
-	}
+	if ( bIsStateChangeReady && nextState )
+		TransitionBetweenStates();
 
-	FVector targetLoc = attackCircle->GetLocationForAgent( agent );
-	FNavLocation navLoc;
-	
-	if ( GetWorld()->GetNavigationSystem()->ProjectPointToNavigation( targetLoc, navLoc ) && navLoc.Location.Z < agent->GetActorLocation().Z + 100  ) {
-		MoveToLocation( targetLoc );
-	}
-	else {
-		UE_LOG( LogTemp, Warning, TEXT( "Getting a new slot. Old slot was %s" ), *targetLoc.ToString() );
-		attackCircle->GetNewSlotForAgent( agent );
-		UE_LOG( LogTemp, Warning, TEXT( "New slot is %s" ), *attackCircle->GetLocationForAgent( agent ).ToString() );
-	}
-
-	if ( FVector::DistSquared( agent->GetActorLocation(), targetLoc ) < 22500 )
-		if(currentState)
-			currentState->StateTick( agent, DeltaSeconds );
+	MoveToLocation( targetLoc );
 }
 
 void ADragoonAIController::BeginPlay() {
 	// call parent begin play
 	Super::BeginPlay();
+
 	// setup pointer variables
 	game = ( ADragoonGameMode* )GetWorld()->GetAuthGameMode();
 	agent = ( AEnemyAgent* )GetCharacter();
 	attackCircle = &game->attackCircle;
+	navSystem = GetWorld()->GetNavigationSystem();
+
 	// register agent with blackboard
 	game->blackboard.RegisterAgent( agent );
-	currentState = nullptr;
+
+	// setup initial state for agent
+	currentState = ( State* )new AlertState();
+	nextState = ( State* )new AlertState();
+	bIsStateChangeReady = true;
+}
+
+void ADragoonAIController::TransitionBetweenStates() {
+	// begin transition
+	currentState->ExitState( agent );
+
+	// update pointers to the new states
+	State* oldState = currentState;
+	currentState = nextState;
+	
+	// reset next state and remove the old state object
+	nextState = nullptr;
+	delete oldState;
+
+	// start up the new state
+	if ( currentState )
+		currentState->EnterState( agent );
+	
+	// state change has completed
+	bIsStateChangeReady = false;
 }

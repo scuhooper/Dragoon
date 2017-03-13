@@ -150,6 +150,14 @@ public:
 	 */
 	void GetNewSlotForAgent( AEnemyAgent* agent );
 
+	/**
+	* Checks if the circle has space for a requesting agent to join.
+	* @param agent	Agent wishing to join circle
+	* @returns		Will return true if the agent can join the circle, or false if they are unable
+	*/
+	UFUNCTION( BlueprintCallable, Category = AttackCircle )
+	bool CanAgentJoinCircle( AEnemyAgent* agent );
+
 private:
 	/**
 	* Compares the distance squared of all the empty attack circle slots and returns the closest one.
