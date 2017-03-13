@@ -132,20 +132,22 @@ void DragoonAIBlackboard::AgentHasDied( AEnemyAgent* agent ) {
 }
 
 void DragoonAIBlackboard::PredictNextAttack() {
+	// map to contain attack occurences from the entire playtime
+	TMap<int, int> cumulativeAttackOccurences;
+
 	if ( !bIsHistoryUsed ) {
 		if ( attackHistory.size() >= 3 )
 			bIsHistoryUsed = true;
 	}
 	else {
-		// map to contain attack occurences from the entire playtime
-		TMap<int, int> cumulativeAttackOccurences;
 		for ( int i = 0; i < 27; i++ ) {
 			// add any attack that has more than 0 occurences to map
-			if ( attackNGram[ atk2 ][ atk3 ][ i ] > 0 )
+			if ( attackNGram[ atk2 ][ atk3 ][ i ] > 0 ) {
 				cumulativeAttackOccurences.Add( i, attackNGram[ atk2 ][ atk3 ][ i ] );
 
-			// update most occurence indices
-			CalculateHighestAttackOccurences( cumulativeAttackOccurences, i );
+				// update most occurence indices
+				CalculateHighestAttackOccurences( cumulativeAttackOccurences, i );
+			}
 		}
 
 		// check history for matching patterns
