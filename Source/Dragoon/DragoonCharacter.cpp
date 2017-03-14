@@ -212,11 +212,15 @@ void ADragoonCharacter::ResetMoveFloats() {
 }
 
 void ADragoonCharacter::StrongAttack() {
+	if ( IsActionInProgress() )
+		return;
 	bIsStrongAttack = true;
 	BasicAttack();
 }
 
 void ADragoonCharacter::FeintAttack() {
+	if ( IsActionInProgress() )
+		return;
 	bIsFeintAttack = true;
 	BasicAttack();
 }
