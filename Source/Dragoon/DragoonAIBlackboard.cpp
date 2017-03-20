@@ -9,12 +9,26 @@ DragoonAIBlackboard::DragoonAIBlackboard()
 	// initialize arrays to be empty
 	agentsInCombat.Empty();
 	agentsNotInCombat.Empty();
+	for ( int i = 0; i < 27; i++ ) {
+		for ( int j = 0; j < 27; j++ ) {
+			for ( int k = 0; k < 27; k++ ) {
+				attackNGram[ i ][ j ][ k ] = 0;
+			}
+		}
+	}
 }
 
 DragoonAIBlackboard::DragoonAIBlackboard( AttackCircle* circle ) {
 	// initialize arrays to be empty
 	agentsInCombat.Empty();
 	agentsNotInCombat.Empty();
+	for ( int i = 0; i < 27; i++ ) {
+		for ( int j = 0; j < 27; j++ ) {
+			for ( int k = 0; k < 27; k++ ) {
+				attackNGram[ i ][ j ][ k ] = 0;
+			}
+		}
+	}
 
 	// set attack circle reference
 	attackCircle = circle;
@@ -155,11 +169,13 @@ void DragoonAIBlackboard::PredictNextAttack() {
 			if ( attackHistory[ i ] == atk2 ) {
 				if ( attackHistory[ i + 1 ] == atk3 ) {
 					// multiply occurence by the weight for history
+					UE_LOG( LogTemp, Warning, TEXT( "The amout of attack occurences is %d" ), cumulativeAttackOccurences[ attackHistory[ i + 2 ] ] );
 					cumulativeAttackOccurences[ attackHistory[ i + 2 ] ] *= historyWeight;
+					UE_LOG( LogTemp, Warning, TEXT( "The amout of attack occurences after weighting for history is %d" ), cumulativeAttackOccurences[ attackHistory[ i + 2 ] ] );
 
 					// update most occurence indices
 					int index = i + 2;
-					CalculateHighestAttackOccurences( cumulativeAttackOccurences, index );
+					CalculateHighestAttackOccurences( cumulativeAttackOccurences, attackHistory[ i + 2 ] );
 				}
 			}
 		}
