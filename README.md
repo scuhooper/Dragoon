@@ -8,6 +8,7 @@ The circle also controls the amount of attacks that can be occurring simultaneou
 
 <br />
 <hr>
+
 ## Grid-Based Attack Directions
 All attacks in the game are based on the direction of a 3x3 grid resembling a tic-tac-toe board. A good way to think of choosing the direction is to either imagine the sword follows the movement of your mouse, or that your mouse is in the center square of the grid and to make attacks other than a thrust, you must move your mouse to be in the correct square. An example of the directions in the grid is shown below:
 
@@ -17,6 +18,7 @@ The attack direction grid is then combined with three separate types of attacks:
 
 <br />
 <hr>
+
 ## N-Gram Attack Predictions
 Cyberpunk’d also incorporates a machine learning based technique of using N-grams using past attacks to make predictions about what the next attack from the player will be by analyzing patterns of attacks previously seen and recorded. While this allows for the AI of the game to make better informed choices, it doesn’t allow them to instantly react to an attack by “cheating” to get the exact attack direction and type the player has just started. The goal is to make the player change up fighting styles as the game progresses. This is accomplished in large part by weighting recent trends more heavily than the overall history of the player’s attacks. The N-gram system also attempts to provide better results by modifying itself based on whether its predictions are correct or false.
 
