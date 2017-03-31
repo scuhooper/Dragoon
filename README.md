@@ -23,9 +23,15 @@ The attack direction grid is then combined with three separate types of attacks:
 Cyberpunk’d also incorporates a machine learning based technique of using N-grams using past attacks to make predictions about what the next attack from the player will be by analyzing patterns of attacks previously seen and recorded. While this allows for the AI of the game to make better informed choices, it doesn’t allow them to instantly react to an attack by “cheating” to get the exact attack direction and type the player has just started. The goal is to make the player change up fighting styles as the game progresses. This is accomplished in large part by weighting recent trends more heavily than the overall history of the player’s attacks. The N-gram system also attempts to provide better results by modifying itself based on whether its predictions are correct or false.
 
 ```
+This is attempting to predict the next attack of the player given the previous two attacks made.
+
+Attack1 is previous attack used by the player;
+Attack2 is the current attack made by the player;
 int TotalAttacks;
-foreach Attack in 3DArray[Attack1][Attack2]{
-    create map entry(array index, Attack total);
+
+for(int i = 0; i < array length; i++){
+    Attack = 3DArray[Attack1][Attack2][i];
+    create map entry(Attack ID, Attack total);
     TotalAttacks += Attack total;
     }
 foreach Attack in deque History{
