@@ -53,3 +53,10 @@ foreach Attack in map{
 ```
 
 The returned attack can be saved as a variable and checked on the player's next attack to see if the prediction was correct and a Condfidence float percentage can be adjusted accordingly. I recommend small changes to the confidence while being clamped to a max and min value so just getting a small series of correct or incorrect predictions doesn't skew how well the algorithm is truly working.
+
+<br />
+<hr>
+
+# Code Repository
+## [Dragoon Repo](https://github.com/scuhooper/Dragoon/)
+This repo runs on 3 core branches. The Gold branch is a stable version of the game with features fully working. The WeeklyBuild branch is just an update from the InDevelopment branch done every Sunday night/Monday morning, and the InDevelopment branch is the branch used for daily development changes and may not be in a stable, playable condition at all times.
