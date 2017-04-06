@@ -64,6 +64,26 @@ public:
 	/** return game mode pointer **/
 	FORCEINLINE ADragoonGameMode* GetGameMode() const { return game; }
 
+	/**
+	 *
+	 */
+	void ReactToIncomingAttack( int attackID, float confidenceInAttack );
+
+	/**
+	*
+	*/
+	void QuickAttackReaction( EAttackDirection directionOfAttack );
+
+	/**
+	*
+	*/
+	void StrongAttackReaction( EAttackDirection directionOfAttack );
+
+	/**
+	*
+	*/
+	void FeintAttackReaction( EAttackDirection directionOfAttack );
+
 protected:
 	/**
 	 * Updates enemy logic every frame. Used for moving AI.
