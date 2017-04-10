@@ -9,12 +9,30 @@ DragoonAIBlackboard::DragoonAIBlackboard()
 	// initialize arrays to be empty
 	agentsInCombat.Empty();
 	agentsNotInCombat.Empty();
+	for ( int i = 0; i < 27; i++ ) {
+		for ( int j = 0; j < 27; j++ ) {
+			for ( int k = 0; k < 27; k++ ) {
+				attackNGram[ i ][ j ][ k ] = 0;
+			}
+		}
+	}
 }
 
 DragoonAIBlackboard::DragoonAIBlackboard( AttackCircle* circle ) {
 	// initialize arrays to be empty
 	agentsInCombat.Empty();
 	agentsNotInCombat.Empty();
+
+	// setup the n gram prediction array to have one occurence of all possibilities
+	// This allows for better predictions later by having every potential outcome have at least a slender potential.
+	// By having very small chances for unseen attacks, it means it carries a very low rate of use versus a random 20% choice to pick a random attack
+	for ( int i = 0; i < 27; i++ ) {
+		for ( int j = 0; j < 27; j++ ) {
+			for ( int k = 0; k < 27; k++ ) {
+				attackNGram[ i ][ j ][ k ] = 1;
+			}
+		}
+	}
 
 	// set attack circle reference
 	attackCircle = circle;
@@ -77,6 +95,22 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 	if ( agentsInCombat.Num() == 0 )
 		return;
 
+	// check if predicted attack is attack that was made
+	if ( nextAttackPrediction == atk.id ) {
+		// increase the confidence in the prediction algorithm
+		predictionConfidence += 0.05f;
+		// check to make sure confidence is within clamped range
+		if ( predictionConfidence > 0.95f )
+			predictionConfidence = 0.95f;
+	}
+	else {
+		// decrease the confidence in the prediction algorithm
+		predictionConfidence -= 0.01f;
+		// check to make sure confidence is within clamped range
+		if ( predictionConfidence > 0.5f )
+			predictionConfidence = 0.5f;
+	}
+
 	// cycle attacks forward one slot. put most recent attack in atk3. The order is important as contents are being overwritten
 	atk1 = atk2;
 	atk2 = atk3;
@@ -88,15 +122,82 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 	// update the n gram array to have another reference to attack sequence
 	attackNGram[ atk1 ][ atk2 ][ atk3 ]++;
 
+	// update history deque with new attack
+	if ( !bIsHistoryFull ) {
+		attackHistory.push_back( atk3 );
+		// check if history is now at our max size
+		if ( attackHistory.size() == maxHistorySize )
+			bIsHistoryFull = true;
+	}
+	else {
+		// remove oldest entry (will be the first entry as we add to the back), and add new attack to back of history
+		attackHistory.pop_front();
+		attackHistory.push_back( atk3 );
+	}
+
 	// call agent behavior to respond to attack if it is in combat
 	if ( agentsInCombat.Contains( atk.target ) ) {
 		// make target react to incoming attack
 		ADragoonAIController* AIController = (ADragoonAIController*)atk.target->GetController();
-		AIController->test;	// testing access to ai controller. needs to be updated with actual logic for reacting to attacks
+		// testing access to ai controller. needs to be updated with actual logic for reacting to attacks
 	}
+
+	PredictNextAttack();
 }
 
 void DragoonAIBlackboard::AgentHasDied( AEnemyAgent* agent ) {
+	// notify controller that agent has died
 	ADragoonAIController* AIController = ( ADragoonAIController* )agent->GetController();
 	AIController->AgentHasDied();
+}
+
+void DragoonAIBlackboard::PredictNextAttack() {
+	// map to contain attack occurences from the entire playtime
+	TMap<int, int> cumulativeAttackOccurrences;
+	int totalAttackOccurrences = 0;
+
+	if ( !bIsHistoryUsed ) {
+		if ( attackHistory.size() >= 3 )
+			bIsHistoryUsed = true;
+	}
+	else {
+		for ( int i = 0; i < 27; i++ ) {
+			// add each attack to the map
+			cumulativeAttackOccurrences.Add( i, attackNGram[ atk2 ][ atk3 ][ i ] );
+			totalAttackOccurrences += attackNGram[ atk2 ][ atk3 ][ i ];
+		}
+
+		// check history for matching patterns
+		for ( int i = 0; i < attackHistory.size() - 2; i++ ) {
+			if ( attackHistory[ i ] == atk2 ) {
+				if ( attackHistory[ i + 1 ] == atk3 ) {
+					// subtract the amount currently in the history from total
+					totalAttackOccurrences -= attackHistory[ i + 2 ];
+
+					// multiply occurence by the weight for history
+					cumulativeAttackOccurrences[ attackHistory[ i + 2 ] ] *= historyWeight;
+
+					// add the amount back to total
+					totalAttackOccurrences += attackHistory[ i + 2 ];
+				}
+			}
+		}
+
+		// values for making a weighted prediction based on number of occurences
+		float predictionValue = FMath::FRand();
+		float currentRange = 0;
+
+		// loop to see which attack fits the prediction value
+		for ( int i = 0; i < attackHistory.size(); i++ ) {
+			// add the percentage chance of the attack to the already checked values
+			currentRange += ( float )attackHistory[ i ] / ( float )totalAttackOccurrences;
+			// check if prediction is met
+			if ( predictionValue <= currentRange ) {
+				// update the next predicted attack
+				nextAttackPrediction = i;
+				// exit function and loop
+				return;
+			}
+		}
+	}
 }

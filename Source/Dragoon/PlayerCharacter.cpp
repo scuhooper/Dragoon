@@ -28,30 +28,31 @@ void APlayerCharacter::BeginPlay() {
 }
 
 void APlayerCharacter::PlayerAttack() {
-	BeginAttack();
+	if ( DidNewAttackOccur() ) {
 
-	// determine type of attack
-	EAttackType type;
-	if ( GetIsStrongAttacking() )
-		type = EAttackType::AT_Strong;
-	else if ( GetIsFeintAttacking() )
-		type = EAttackType::AT_Feint;
-	else
-		type = EAttackType::AT_Quick;
+		// determine type of attack
+		EAttackType type;
+		if ( GetIsStrongAttacking() )
+			type = EAttackType::AT_Strong;
+		else if ( GetIsFeintAttacking() )
+			type = EAttackType::AT_Feint;
+		else
+			type = EAttackType::AT_Quick;
 
-	// local vars for line trace
-	FHitResult hit;
-	TArray<FHitResult> hits;
-	FCollisionQueryParams params( FName( TEXT( "Attack Target Trace" ) ), true, this );
-	
-	// perform line trace from player extending out forward vector
-	if ( GetWorld()->LineTraceMultiByChannel( hits, GetActorLocation(), GetActorForwardVector() * 5000, ECollisionChannel::ECC_Pawn, params ) ) {
-		// cycle through hit objects until an enemy is found
-		for ( auto& target : hits ) {
-			if ( Cast<AEnemyAgent>( target.Actor.Get() ) ) {
-				// send attack information to blackboard because enemy was attacked and exit loop
-				AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, ( AEnemyAgent* )target.Actor.Get() ) );
-				break;
+		// local vars for line trace
+		FHitResult hit;
+		TArray<FHitResult> hits;
+		FCollisionQueryParams params( FName( TEXT( "Attack Target Trace" ) ), true, this );
+
+		// perform line trace from player extending out forward vector
+		if ( GetWorld()->LineTraceMultiByChannel( hits, GetActorLocation(), GetActorForwardVector() * 5000, ECollisionChannel::ECC_Pawn, params ) ) {
+			// cycle through hit objects until an enemy is found
+			for ( auto& target : hits ) {
+				if ( Cast<AEnemyAgent>( target.Actor.Get() ) ) {
+					// send attack information to blackboard because enemy was attacked and exit loop
+					AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, ( AEnemyAgent* )target.Actor.Get() ) );
+					break;
+				}
 			}
 		}
 	}
@@ -88,4 +89,14 @@ void APlayerCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputCo
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction( "ResetVR", IE_Pressed, this, &APlayerCharacter::OnResetVR );
+}
+
+bool APlayerCharacter::DidNewAttackOccur() {
+	if ( GetIsAttacking() || GetIsDead() || GetIsDodging() || GetIsHurt() || GetIsParrying() || GetIsRecovering() ) {
+		return false;
+	}
+	else {
+		BeginAttack();
+		return true;
+	}
 }

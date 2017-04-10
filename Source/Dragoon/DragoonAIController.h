@@ -18,8 +18,9 @@ class DRAGOON_API ADragoonAIController : public AAIController
 	GENERATED_BODY()
 	
 public:
-	// testing..
-	int test;
+	FVector targetLoc;
+
+	UNavigationSystem* navSystem;
 
 private:
 	// reference to agent being controlled
@@ -33,6 +34,10 @@ private:
 
 	// pointer to the current state of FSM for this controller/agent
 	State* currentState;
+
+	State* nextState;
+
+	bool bIsStateChangeReady;
 	
 public:
 	// default c-tor
@@ -48,6 +53,37 @@ public:
 
 	void AttackPlayer();
 
+	/**
+	 * Changes state from the currentState to the supplied newState
+	 * @param newState	pointer to the new state to be entered by the controller
+	 */
+	void SwapState( State* newState );
+
+	/** return attack cicrle pointer **/
+	FORCEINLINE AttackCircle* GetAttackCircle() const { return attackCircle; }
+	/** return game mode pointer **/
+	FORCEINLINE ADragoonGameMode* GetGameMode() const { return game; }
+
+	/**
+	 *
+	 */
+	void ReactToIncomingAttack( int attackID, float confidenceInAttack );
+
+	/**
+	*
+	*/
+	void QuickAttackReaction( EAttackDirection directionOfAttack );
+
+	/**
+	*
+	*/
+	void StrongAttackReaction( EAttackDirection directionOfAttack );
+
+	/**
+	*
+	*/
+	void FeintAttackReaction( EAttackDirection directionOfAttack );
+
 protected:
 	/**
 	 * Updates enemy logic every frame. Used for moving AI.
@@ -58,4 +94,6 @@ protected:
 	 * Event runs once and sets up variables for controller. Registers the controlled agent with the blackboard.
 	 */
 	virtual void BeginPlay() override;
+
+	void TransitionBetweenStates();
 };

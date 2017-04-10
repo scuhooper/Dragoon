@@ -97,4 +97,8 @@ void AEnemyAgent::AttackDirectionChosen() {
 
 void AEnemyAgent::BeginPlay() {
 	Super::BeginPlay();
+
+	// set guard location to current location if one is not set
+	if ( guardPost == FVector::ZeroVector )
+		guardPost = GetActorLocation();
 }

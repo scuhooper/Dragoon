@@ -146,6 +146,10 @@ void AttackCircle::GetNewSlotForAgent( AEnemyAgent* agent ) {
 	AssignAgentToSlot( agent, newSlot );
 }
 
+bool AttackCircle::CanAgentJoinCircle( AEnemyAgent* agent ) {
+	return agent->GetEnemyScore() <= availableEnemyScore;
+}
+
 EAttackCircleSlot AttackCircle::CheckForClosestAvailableSlot( AEnemyAgent* requester ) {
 	// setup local variables
 	FVector requesterLocation = requester->GetActorLocation();

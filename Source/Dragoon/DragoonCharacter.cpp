@@ -169,6 +169,7 @@ void ADragoonCharacter::BasicAttack() {
 
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );	// sets slow-mo effect
 	Controller->SetIgnoreMoveInput( true );	// stop getting move input
+	bUseControllerRotationYaw = false;
 	bIsGettingAttackDirection = true;	// used to stop controlling camera and instead make the attack direction vector
 }
 
@@ -201,6 +202,9 @@ void ADragoonCharacter::MyLookUp( float Rate ) {
 }
 
 void ADragoonCharacter::SheatheUnsheatheSword() {
+	if ( IsActionInProgress() )
+		return;
+
 	bIsSwordDrawn = !bIsSwordDrawn;	// set is sword drawn to opposite
 	this->GetCharacterMovement()->bOrientRotationToMovement = !( this->GetCharacterMovement()->bOrientRotationToMovement );	// toggle orienting rotation with movement
 	bUseControllerRotationYaw = !bUseControllerRotationYaw;	// toggle whether to move character yaw with camera yaw
@@ -212,11 +216,15 @@ void ADragoonCharacter::ResetMoveFloats() {
 }
 
 void ADragoonCharacter::StrongAttack() {
+	if ( IsActionInProgress() )
+		return;
 	bIsStrongAttack = true;
 	BasicAttack();
 }
 
 void ADragoonCharacter::FeintAttack() {
+	if ( IsActionInProgress() )
+		return;
 	bIsFeintAttack = true;
 	BasicAttack();
 }
@@ -235,6 +243,7 @@ void ADragoonCharacter::EnableDodging() {
 	// set animBP bool and turn off movement input
 	bIsDodging = true;
 	Controller->SetIgnoreMoveInput( true );
+	bUseControllerRotationYaw = false;
 }
 
 void ADragoonCharacter::DodgeKeyReleased() {
@@ -258,6 +267,7 @@ void ADragoonCharacter::Parry() {
 
 	UGameplayStatics::SetGlobalTimeDilation( GetWorld(), 0.5f );	// start slow-mo effect
 	Controller->SetIgnoreMoveInput( true );	// ignore movement while deciding attack direction
+	bUseControllerRotationYaw = false;
 	bIsGettingAttackDirection = true;	// true to get attack direction vector
 }
 
@@ -283,16 +293,19 @@ void ADragoonCharacter::FinishedAttacking() {
 	bIsFeintAttack = false;
 	attackDirection = FVector2D( 0, 0 );	// reset attack direction vector
 	Controller->SetIgnoreMoveInput( false );	// enable movement input
+	bUseControllerRotationYaw = true;
 }
 
 void ADragoonCharacter::FinishedDodging() {
 	bIsDodging = false;	// set animBP bool to false
+	bUseControllerRotationYaw = true;
 	Controller->SetIgnoreMoveInput( false );	// enable movement input
 }
 
 void ADragoonCharacter::FinishedParrying() {
 	bIsParrying = false;	// set animBP bool to false
 	attackDirection = FVector2D( 0, 0 );	// reset attack direction vector
+	bUseControllerRotationYaw = true;
 	Controller->SetIgnoreMoveInput( false );	// enable movement input
 }
 
