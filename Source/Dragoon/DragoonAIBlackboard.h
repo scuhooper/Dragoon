@@ -43,13 +43,9 @@ private:
 	int historyWeight = 2;
 
 	// the probability of an unknown or random attack
-	float weightForRandomAttack = 0.2f;
+	float predictionConfidence = 0.8f;
 
-	// indices for most occurences
-	int mostOccurencesIndex1 = -1;
-	int mostOccurencesIndex2 = -1;
-	int mostOccurencesIndex3 = -1;
-
+	// what attack is predicted. Uses the ID system of attacks as its value
 	int nextAttackPrediction;
 
 public:
@@ -99,6 +95,4 @@ public:
 
 protected:
 	void PredictNextAttack();
-
-	void CalculateHighestAttackOccurences( TMap<int,int> &occurenceMap, int &currentIndex );
 };

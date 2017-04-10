@@ -22,10 +22,14 @@ DragoonAIBlackboard::DragoonAIBlackboard( AttackCircle* circle ) {
 	// initialize arrays to be empty
 	agentsInCombat.Empty();
 	agentsNotInCombat.Empty();
+
+	// setup the n gram prediction array to have one occurence of all possibilities
+	// This allows for better predictions later by having every potential outcome have at least a slender potential.
+	// By having very small chances for unseen attacks, it means it carries a very low rate of use versus a random 20% choice to pick a random attack
 	for ( int i = 0; i < 27; i++ ) {
 		for ( int j = 0; j < 27; j++ ) {
 			for ( int k = 0; k < 27; k++ ) {
-				attackNGram[ i ][ j ][ k ] = 0;
+				attackNGram[ i ][ j ][ k ] = 1;
 			}
 		}
 	}
@@ -93,16 +97,18 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 
 	// check if predicted attack is attack that was made
 	if ( nextAttackPrediction == atk.id ) {
-		// update weight of unknown event to be less as predictions are being correct
-		weightForRandomAttack -= .05f;
-		if ( weightForRandomAttack < .05f )
-			weightForRandomAttack = .05f;
+		// increase the confidence in the prediction algorithm
+		predictionConfidence += 0.05f;
+		// check to make sure confidence is within clamped range
+		if ( predictionConfidence > 0.95f )
+			predictionConfidence = 0.95f;
 	}
 	else {
-		// increase weight for random attack as predictions are incorrect
-		weightForRandomAttack += .02f;
-		if ( weightForRandomAttack > .5f )
-			weightForRandomAttack = .5f;
+		// decrease the confidence in the prediction algorithm
+		predictionConfidence -= 0.01f;
+		// check to make sure confidence is within clamped range
+		if ( predictionConfidence > 0.5f )
+			predictionConfidence = 0.5f;
 	}
 
 	// cycle attacks forward one slot. put most recent attack in atk3. The order is important as contents are being overwritten
@@ -147,7 +153,8 @@ void DragoonAIBlackboard::AgentHasDied( AEnemyAgent* agent ) {
 
 void DragoonAIBlackboard::PredictNextAttack() {
 	// map to contain attack occurences from the entire playtime
-	TMap<int, int> cumulativeAttackOccurences;
+	TMap<int, int> cumulativeAttackOccurrences;
+	int totalAttackOccurrences = 0;
 
 	if ( !bIsHistoryUsed ) {
 		if ( attackHistory.size() >= 3 )
@@ -155,78 +162,42 @@ void DragoonAIBlackboard::PredictNextAttack() {
 	}
 	else {
 		for ( int i = 0; i < 27; i++ ) {
-			// add any attack that has more than 0 occurences to map
-			if ( attackNGram[ atk2 ][ atk3 ][ i ] > 0 ) {
-				cumulativeAttackOccurences.Add( i, attackNGram[ atk2 ][ atk3 ][ i ] );
-
-				// update most occurence indices
-				CalculateHighestAttackOccurences( cumulativeAttackOccurences, i );
-			}
+			// add each attack to the map
+			cumulativeAttackOccurrences.Add( i, attackNGram[ atk2 ][ atk3 ][ i ] );
+			totalAttackOccurrences += attackNGram[ atk2 ][ atk3 ][ i ];
 		}
 
 		// check history for matching patterns
 		for ( int i = 0; i < attackHistory.size() - 2; i++ ) {
 			if ( attackHistory[ i ] == atk2 ) {
 				if ( attackHistory[ i + 1 ] == atk3 ) {
+					// subtract the amount currently in the history from total
+					totalAttackOccurrences -= attackHistory[ i + 2 ];
+
 					// multiply occurence by the weight for history
-					UE_LOG( LogTemp, Warning, TEXT( "The amout of attack occurences is %d" ), cumulativeAttackOccurences[ attackHistory[ i + 2 ] ] );
-					cumulativeAttackOccurences[ attackHistory[ i + 2 ] ] *= historyWeight;
-					UE_LOG( LogTemp, Warning, TEXT( "The amout of attack occurences after weighting for history is %d" ), cumulativeAttackOccurences[ attackHistory[ i + 2 ] ] );
+					cumulativeAttackOccurrences[ attackHistory[ i + 2 ] ] *= historyWeight;
 
-					// update most occurence indices
-					int index = i + 2;
-					CalculateHighestAttackOccurences( cumulativeAttackOccurences, attackHistory[ i + 2 ] );
+					// add the amount back to total
+					totalAttackOccurrences += attackHistory[ i + 2 ];
 				}
 			}
 		}
 
-		float attack1Ratio = 0, attack2Ratio = 0, attack3Ratio = 0;
-		int totalOfHighestOccurenceAttacks = 0;
-		// get 3 largest values in attack occurences
-		if ( cumulativeAttackOccurences.Contains( mostOccurencesIndex1 ) ) {
-			totalOfHighestOccurenceAttacks += cumulativeAttackOccurences[ mostOccurencesIndex1 ];
-			if ( cumulativeAttackOccurences.Contains( mostOccurencesIndex2 ) ) {
-				totalOfHighestOccurenceAttacks += cumulativeAttackOccurences[ mostOccurencesIndex2 ];
-				if ( cumulativeAttackOccurences.Contains( mostOccurencesIndex3 ) ) {
-					totalOfHighestOccurenceAttacks += cumulativeAttackOccurences[ mostOccurencesIndex3 ];
-					attack3Ratio = ( ( float )cumulativeAttackOccurences[ mostOccurencesIndex3 ] / ( float )totalOfHighestOccurenceAttacks ) * ( 1 - weightForRandomAttack );
-				}
-				attack2Ratio = ( ( float )cumulativeAttackOccurences[ mostOccurencesIndex2 ] / ( float )totalOfHighestOccurenceAttacks ) * ( 1 - weightForRandomAttack );
-			}
-			attack1Ratio = ( ( float )cumulativeAttackOccurences[ mostOccurencesIndex1 ] / ( float )totalOfHighestOccurenceAttacks ) * ( 1 - weightForRandomAttack );
-		}
+		// values for making a weighted prediction based on number of occurences
+		float predictionValue = FMath::FRand();
+		float currentRange = 0;
 
-		// get random value to compare against weights for the predicted attack
-		float prediction = FMath::FRand();
-
-		// choose which attack for next prediction based on weights given to the attacks based on occurences
-		if ( prediction < weightForRandomAttack )
-			nextAttackPrediction = FMath::RandRange( 0, 26 );
-		else if ( prediction < weightForRandomAttack + attack1Ratio )
-			nextAttackPrediction = mostOccurencesIndex1;
-		else if ( prediction < weightForRandomAttack + attack1Ratio + attack2Ratio )
-			nextAttackPrediction = mostOccurencesIndex2;
-		else
-			nextAttackPrediction = mostOccurencesIndex3;
-	}
-}
-
-void DragoonAIBlackboard::CalculateHighestAttackOccurences( TMap<int, int> &occurenceMap, int &currentIndex ) {
-	// update most occurence indices
-	if ( occurenceMap[ currentIndex ] > occurenceMap.FindOrAdd( mostOccurencesIndex3 ) ) {
-		if ( occurenceMap[ currentIndex ] > occurenceMap.FindOrAdd( mostOccurencesIndex2 ) ) {
-			if ( occurenceMap[ currentIndex ] > occurenceMap.FindOrAdd( mostOccurencesIndex1 ) ) {
-				mostOccurencesIndex3 = mostOccurencesIndex2;
-				mostOccurencesIndex2 = mostOccurencesIndex1;
-				mostOccurencesIndex1 = currentIndex;
+		// loop to see which attack fits the prediction value
+		for ( int i = 0; i < attackHistory.size(); i++ ) {
+			// add the percentage chance of the attack to the already checked values
+			currentRange += ( float )attackHistory[ i ] / ( float )totalAttackOccurrences;
+			// check if prediction is met
+			if ( predictionValue <= currentRange ) {
+				// update the next predicted attack
+				nextAttackPrediction = i;
+				// exit function and loop
+				return;
 			}
-			else {
-				mostOccurencesIndex3 = mostOccurencesIndex2;
-				mostOccurencesIndex2 = currentIndex;
-			}
-		}
-		else {
-			mostOccurencesIndex3 = currentIndex;
 		}
 	}
 }

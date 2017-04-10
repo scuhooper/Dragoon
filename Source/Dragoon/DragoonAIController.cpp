@@ -25,6 +25,7 @@ void ADragoonAIController::AgentHasDied() {
 
 	game->blackboard.RemoveAgent( agent );
 
+	// stop controlling the agent and destroy this controller
 	UnPossess();
 	Destroy();
 }
@@ -36,13 +37,62 @@ void ADragoonAIController::AttackPlayer() {
 }
 
 void ADragoonAIController::SwapState( State* newState ) {
+	// if newstate exists...
 	if ( newState ) {
-		nextState = newState;
-		bIsStateChangeReady = true;
+		nextState = newState;	// update our state logic
+		bIsStateChangeReady = true;	// set boolean to alert logic to begin state change
 	}
 }
 
+void ADragoonAIController::ReactToIncomingAttack( int attackID, float confidenceInAttack ) {
+	// check if agent is able to react to the attack
+	if ( agent->IsBusy() )
+		return;
+
+	EAttackDirection attackDirection;
+	EAttackType attackType;
+	// use float to get whether to trust prediction
+	if ( FMath::FRand() < confidenceInAttack )
+	{
+		// trust in the predicted attack
+		// break attackID apart to get attack type and direction
+		attackDirection = ( EAttackDirection )( attackID % 9 );	// modulo 9 will return a value between 0 and 8 that correlates to the direction enum
+		attackType = ( EAttackType )( attackID / 9 );	// dividing by 9 will return a value between 0 and 2 that correlates to the type enum
+	}
+	else {
+		// distrust prediction
+		int newAttack = FMath::RandRange( 0, 26 );	// get random attack ID
+		// break newAttack apart to get attack type and direction
+		attackDirection = ( EAttackDirection )( newAttack % 9 );	// modulo 9 will return a value between 0 and 8 that correlates to the direction enum
+		attackType = ( EAttackType )( newAttack / 9 );	// dividing by 9 will return a value between 0 and 2 that correlates to the type enum
+	}
+
+	// choose appropriate response based on type of attack
+	if ( attackType == EAttackType::AT_Quick ) {
+		// call quick attack reaction
+	}
+	else if ( attackType == EAttackType::AT_Strong ) {
+		// call strong attack reaction
+	}
+	else if ( attackType == EAttackType::AT_Feint ) {
+		// call feint attack reaction
+	}
+}
+
+void ADragoonAIController::QuickAttackReaction( EAttackDirection directionOfAttack ) {
+	agent->ParryAttack( directionOfAttack );	// attempt to parry the attack
+}
+
+void ADragoonAIController::StrongAttackReaction( EAttackDirection directionOfAttack ) {
+	// attempt to dodge the attack
+}
+
+void ADragoonAIController::FeintAttackReaction( EAttackDirection directionOfAttack ) {
+	// unsure of what to do for this reaction currently
+}
+
 void ADragoonAIController::Tick( float DeltaSeconds ) {
+	// make sure agent is alive and valid
 	if ( agent->GetIsDead() )
 		return;
 
@@ -53,11 +103,13 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 	!!!!!TESTING BELOW!!!!!
 	*********/
 
+	// if we have a state in the FSM, run its behavior
 	if ( currentState )
 		currentState->StateTick( agent, DeltaSeconds );
 
+	// check if the state is attempting to move to a new state
 	if ( bIsStateChangeReady && nextState )
-		TransitionBetweenStates();
+		TransitionBetweenStates();	// move to new state
 
 	MoveToLocation( targetLoc );
 }
