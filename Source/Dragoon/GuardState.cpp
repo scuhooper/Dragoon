@@ -4,6 +4,7 @@
 #include "DragoonAIController.h"
 #include "PatrolState.h"
 #include "GuardState.h"
+#include "AlertState.h"
 
 GuardState::GuardState()
 {
@@ -36,6 +37,15 @@ void GuardState::StateTick( AEnemyAgent* agent, float DeltaSeconds ) {
 	// swap to patrol state if waypoints are setup for agent
 	if ( !agent->waypoints.Num() == 0 )
 		controller->SwapState( ( State* ) new PatrolState() );
+
+	for ( auto& actor : controller->perceivedActors ) {
+		if ( actor == controller->GetAttackCircle()->GetPlayer() ) {
+			controller->SwapState( ( State* )new AlertState() );
+			break;
+		}
+		else
+			continue;
+	}
 }
 
 void GuardState::ExitState( AEnemyAgent* agent ) {

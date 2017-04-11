@@ -3,10 +3,30 @@
 #include "Dragoon.h"
 #include "AttackState.h"
 #include "AlertState.h"
+#include "GuardState.h"
 #include "DragoonAIController.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 ADragoonAIController::ADragoonAIController() {
-	// do super awesome AI stuff
+	// setup AI Perception system
+	UAIPerceptionComponent* perception = CreateDefaultSubobject<UAIPerceptionComponent>( TEXT( "Perception Component" ) );
+	SetPerceptionComponent( *perception );
+	UAISenseConfig_Sight *sightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>( TEXT( "Sight Config" ) );
+
+	// configure sight sense parameters
+	sightConfig->SightRadius = 1000;
+	sightConfig->LoseSightRadius = 1500;
+	sightConfig->PeripheralVisionAngleDegrees = 90;
+	sightConfig->DetectionByAffiliation.bDetectEnemies = true;
+	sightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+	sightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+
+	// register sight sense with perception system
+	GetAIPerceptionComponent()->ConfigureSense( *sightConfig );
+	GetAIPerceptionComponent()->SetDominantSense( sightConfig->GetSenseImplementation() );
+	GetAIPerceptionComponent()->OnPerceptionUpdated.AddDynamic( this, &ADragoonAIController::SenseUpdate );
 }
 
 ADragoonAIController::~ADragoonAIController() {
@@ -20,7 +40,7 @@ ADragoonAIController::~ADragoonAIController() {
 
 void ADragoonAIController::AgentHasDied() {
 	// remove agent from attack circle and blackboard
-	if(attackCircle->GetEnemiesInCircle().Contains(agent))
+	if ( attackCircle->GetEnemiesInCircle().Contains( agent ) )
 		attackCircle->RemoveAgentFromCircle( agent );
 
 	game->blackboard.RemoveAgent( agent );
@@ -128,8 +148,8 @@ void ADragoonAIController::BeginPlay() {
 	game->blackboard.RegisterAgent( agent );
 
 	// setup initial state for agent
-	currentState = ( State* )new AlertState();
-	nextState = ( State* )new AlertState();
+	currentState = ( State* )new GuardState();
+	nextState = ( State* )new GuardState();
 	bIsStateChangeReady = true;
 }
 
@@ -151,4 +171,8 @@ void ADragoonAIController::TransitionBetweenStates() {
 	
 	// state change has completed
 	bIsStateChangeReady = false;
+}
+
+void ADragoonAIController::SenseUpdate( TArray<AActor*> sensedActors ) {
+	perceivedActors = sensedActors;
 }
