@@ -15,6 +15,7 @@ GuardState::~GuardState()
 }
 
 void GuardState::EnterState( AEnemyAgent* agent ) {
+	// setup the initial variables
 	ADragoonAIController* controller = ( ADragoonAIController* )agent->GetController();
 	controller->targetLoc = agent->GetActorLocation();
 	timeToWait = FMath::FRandRange( minWaitTime, maxWaitTime );
@@ -23,13 +24,20 @@ void GuardState::EnterState( AEnemyAgent* agent ) {
 void GuardState::StateTick( AEnemyAgent* agent, float DeltaSeconds ) {
 	ADragoonAIController* controller = ( ADragoonAIController* )agent->GetController();
 
+	// is agent at the target destination?
 	if ( agent->GetActorLocation() == controller->targetLoc ) {
+		// see if we have been here long enough
 		if ( timeToWait > 0 )
-			timeToWait -= DeltaSeconds;
+			timeToWait -= DeltaSeconds;	// update the wait timer
 		else {
+			// get a new destination
 			FNavLocation navLoc;
-			controller->navSystem->GetRandomPointInNavigableRadius( agent->guardPost, wanderRange, navLoc );
+			controller->navSystem->GetRandomPointInNavigableRadius( agent->guardPost, wanderRange, navLoc );	// make sure it is on the navmesh
 			controller->targetLoc = navLoc.Location;
+			// start moving to new destination
+			controller->MoveToLocation( navLoc.Location );
+
+			// set up new wait timer
 			timeToWait = FMath::FRandRange( minWaitTime, maxWaitTime );
 		}
 	}
@@ -38,7 +46,9 @@ void GuardState::StateTick( AEnemyAgent* agent, float DeltaSeconds ) {
 	if ( !agent->waypoints.Num() == 0 )
 		controller->SwapState( ( State* ) new PatrolState() );
 
+	// check if the agent has sensed the player
 	for ( auto& actor : controller->perceivedActors ) {
+		// if we have seen the player, try to fight
 		if ( actor == controller->GetAttackCircle()->GetPlayer() ) {
 			controller->SwapState( ( State* )new AlertState() );
 			break;

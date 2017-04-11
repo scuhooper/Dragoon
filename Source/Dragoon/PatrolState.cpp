@@ -4,6 +4,7 @@
 #include "DragoonAIController.h"
 #include "GuardState.h"
 #include "PatrolState.h"
+#include "AlertState.h"
 
 PatrolState::PatrolState()
 {
@@ -46,6 +47,17 @@ void PatrolState::StateTick( AEnemyAgent* agent, float DeltaSeconds ) {
 			UpdateWaypoint( agent );
 		}
 	}
+
+	// check if the agent has sensed the player
+	for ( auto& actor : controller->perceivedActors ) {
+		// if we have seen the player, try to fight
+		if ( actor == controller->GetAttackCircle()->GetPlayer() ) {
+			controller->SwapState( ( State* )new AlertState() );
+			break;
+		}
+		else
+			continue;
+	}
 }
 
 void PatrolState::ExitState( AEnemyAgent* agent ) {
@@ -62,5 +74,5 @@ void PatrolState::UpdateWaypoint( AEnemyAgent* agent ) {
 	if ( currentWaypoint == agent->waypoints.Num() )
 		currentWaypoint = 0;
 	// set new destination
-	controller->targetLoc = agent->waypoints[ currentWaypoint ];
+	controller->MoveToLocation( agent->waypoints[ currentWaypoint ] );
 }

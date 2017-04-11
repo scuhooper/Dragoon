@@ -130,8 +130,6 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 	// check if the state is attempting to move to a new state
 	if ( bIsStateChangeReady && nextState )
 		TransitionBetweenStates();	// move to new state
-
-	MoveToLocation( targetLoc );
 }
 
 void ADragoonAIController::BeginPlay() {
@@ -149,8 +147,7 @@ void ADragoonAIController::BeginPlay() {
 
 	// setup initial state for agent
 	currentState = ( State* )new GuardState();
-	nextState = ( State* )new GuardState();
-	bIsStateChangeReady = true;
+	currentState->EnterState( agent );
 }
 
 void ADragoonAIController::TransitionBetweenStates() {

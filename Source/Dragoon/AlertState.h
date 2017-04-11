@@ -15,6 +15,9 @@ protected:
 	// maximum distance to be maintained from player
 	float maxDistanceFromPlayer = 500;
 
+	// where the agent should be standing
+	FVector position;
+
 public:
 	AlertState();
 	~AlertState();
