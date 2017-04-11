@@ -4,6 +4,7 @@
 #include "AttackState.h"
 #include "AlertState.h"
 #include "GuardState.h"
+#include "PatrolState.h"
 #include "DragoonAIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Sight.h"
@@ -146,7 +147,12 @@ void ADragoonAIController::BeginPlay() {
 	game->blackboard.RegisterAgent( agent );
 
 	// setup initial state for agent
-	currentState = ( State* )new GuardState();
+	if ( agent->waypoints.Num() == 0 )
+		currentState = ( State* )new GuardState();
+	else
+		currentState = ( State* )new PatrolState();
+
+	// make sure state is started correctly
 	currentState->EnterState( agent );
 }
 

@@ -18,6 +18,12 @@ void PatrolState::EnterState( AEnemyAgent* agent ) {
 	// setup initial time to wait
 	if ( !agent->bIsPatrolContinuous )
 		timeToWait = FMath::FRandRange( minWaitTime, maxWaitTime );
+
+	// get the first waypoint for agent
+	UpdateWaypoint( agent );
+
+	// set walk speed to look like normal marching
+	agent->GetCharacterMovement()->MaxWalkSpeed = 300;
 }
 
 void PatrolState::StateTick( AEnemyAgent* agent, float DeltaSeconds ) {
@@ -28,7 +34,7 @@ void PatrolState::StateTick( AEnemyAgent* agent, float DeltaSeconds ) {
 		controller->SwapState( ( State* )new GuardState() );
 
 	// check if we are at the current waypoint
-	if ( agent->GetActorLocation() == agent->waypoints[ currentWaypoint ] ) {
+	if ( FVector::PointsAreNear( agent->GetActorLocation(), agent->waypoints[ currentWaypoint ], 50 ) ) {
 		// agent waits and observes
 		if ( !agent->bIsPatrolContinuous ) {
 			// wait out timer
@@ -61,7 +67,8 @@ void PatrolState::StateTick( AEnemyAgent* agent, float DeltaSeconds ) {
 }
 
 void PatrolState::ExitState( AEnemyAgent* agent ) {
-
+	// reset walking speed to normal value
+	agent->GetCharacterMovement()->MaxWalkSpeed = 600;
 }
 
 void PatrolState::UpdateWaypoint( AEnemyAgent* agent ) {
