@@ -174,7 +174,7 @@ void ADragoonCharacter::BasicAttack() {
 }
 
 void ADragoonCharacter::BeginAttack() {
-	if ( !bIsGettingAttackDirection )	// if we failed to get attack direction, exit
+	if ( !bIsGettingAttackDirection || bIsAttacking || bIsDead || bIsHurt || bIsParrying || bIsDodging )	// if we failed to get attack direction, exit
 		return;
 
 	AttackDirectionChosen();	// get the actual vector for attack direction
@@ -273,7 +273,7 @@ void ADragoonCharacter::Parry() {
 
 void ADragoonCharacter::BeginParry() {
 	// if we don't have attack direction, exit
-	if ( !bIsGettingAttackDirection )
+	if ( !bIsGettingAttackDirection || bIsAttacking || bIsDead || bIsHurt || bIsParrying || bIsDodging )
 		return;
 
 	AttackDirectionChosen();	// convert vector to direction from enum array
@@ -361,6 +361,7 @@ void ADragoonCharacter::MyTakeDamage( int Val ) {
 
 void ADragoonCharacter::Dead() {
 	bIsDead = true;
+	bUseControllerRotationYaw = false;
 }
 
 void ADragoonCharacter::RecoveredFromHit() {
