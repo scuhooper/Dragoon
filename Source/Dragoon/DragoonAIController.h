@@ -22,6 +22,8 @@ public:
 
 	UNavigationSystem* navSystem;
 
+	TArray<AActor*> perceivedActors;
+
 private:
 	// reference to agent being controlled
 	AEnemyAgent* agent;
@@ -96,4 +98,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	void TransitionBetweenStates();
+
+	UFUNCTION()
+	void SenseUpdate( TArray<AActor*> perceivedActors );
 };

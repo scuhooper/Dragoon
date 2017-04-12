@@ -26,7 +26,8 @@ void AttackState::EnterState( AEnemyAgent* agent ) {
 	timeBetweenAttacks = FMath::FRandRange( 3.0f, 5.0f );
 
 	// setup initial spot for agent
-	controller->targetLoc = controller->GetAttackCircle()->GetLocationForAgent( agent );
+	position = controller->GetAttackCircle()->GetLocationForAgent( agent );
+	controller->MoveToLocation( position );
 }
 
 void AttackState::StateTick( AEnemyAgent* agent, float deltaSeconds ) {
@@ -37,11 +38,16 @@ void AttackState::StateTick( AEnemyAgent* agent, float deltaSeconds ) {
 
 	// setup the location the agent should move to, get new attack circle slot if current slot is not on the navmesh
 	ADragoonAIController* controller = ( ADragoonAIController* )agent->GetController();
-	FNavLocation navLoc;
-	if ( controller->navSystem->ProjectPointToNavigation( controller->targetLoc, navLoc ) && navLoc.Location.Z <= agent->GetActorLocation().Z + 100 )
-		controller->targetLoc = controller->GetAttackCircle()->GetLocationForAgent( agent );
-	else
-		controller->GetAttackCircle()->GetNewSlotForAgent( agent );
+	// move to new destination if agent isn't in the proper place
+	if ( position != controller->GetAttackCircle()->GetLocationForAgent( agent ) ) {
+		position = controller->GetAttackCircle()->GetLocationForAgent( agent );
+		FNavLocation navLoc;
+		// make sure assigned position is on navmesh
+		if ( controller->navSystem->ProjectPointToNavigation( position, navLoc ) && navLoc.Location.Z <= agent->GetActorLocation().Z + 100 )
+			controller->MoveToLocation( position );
+		else
+			controller->GetAttackCircle()->GetNewSlotForAgent( agent );	// get new slot if current slot is not on the navmesh
+	}
 
 	// update timer
 	if ( elapsedTime <= timeBetweenAttacks ) {

@@ -11,6 +11,8 @@ class DRAGOON_API AttackState : State
 protected:
 	float timeBetweenAttacks = 0;
 	float elapsedTime = 0;
+
+	FVector position;
 public:
 	AttackState();
 	~AttackState();

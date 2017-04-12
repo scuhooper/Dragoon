@@ -4,8 +4,14 @@
 #include "DragoonAIBlackboard.h"
 #include "DragoonGameMode.h"
 #include "PlayerCharacter.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 APlayerCharacter::APlayerCharacter() {
+	// register player for perception system stimulus
+	UAISenseConfig_Sight* sightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>( TEXT( "Sight Config" ) );
+	UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, sightConfig->GetSenseImplementation(), this );
 }
 
 APlayerCharacter::~APlayerCharacter() {
