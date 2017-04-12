@@ -33,6 +33,18 @@ void APlayerCharacter::BeginPlay() {
 	AIBlackboard = &game->blackboard;
 }
 
+void APlayerCharacter::MyTakeDamage( int dmg ) {
+	if ( GetIsDead() )
+		return;
+
+	Super::MyTakeDamage( dmg );
+	// start first level over if player has dided
+	if ( GetIsDead() ) {
+		FTimerHandle DeathTimerHandle;
+		GetWorldTimerManager().SetTimer( DeathTimerHandle, this, &APlayerCharacter::RestartGame, 3 );
+	}
+}
+
 void APlayerCharacter::PlayerAttack() {
 	if ( DidNewAttackOccur() ) {
 
@@ -105,4 +117,8 @@ bool APlayerCharacter::DidNewAttackOccur() {
 		BeginAttack();
 		return true;
 	}
+}
+
+void APlayerCharacter::RestartGame() {
+	UGameplayStatics::OpenLevel( this, TEXT( "Level1_TheHub" ) );
 }
