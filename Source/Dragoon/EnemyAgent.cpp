@@ -93,6 +93,8 @@ bool AEnemyAgent::IsBusy() {
 }
 
 void AEnemyAgent::DodgeAttack( EAttackDirection dir ) {
+	// set dodge to true so animation plays
+	bIsDodging = true;
 	// choose which direction to dodge based on predicted atttack direction
 	if ( dir == EAttackDirection::AD_DownwardLeftSlash || dir == EAttackDirection::AD_LeftSlash || dir == EAttackDirection::AD_UpwardLeftSlash )
 		moveRight = 1;
@@ -100,8 +102,22 @@ void AEnemyAgent::DodgeAttack( EAttackDirection dir ) {
 		moveRight = -1;
 	else
 		moveForward = -1;
-	// set dodge to true so animation plays
-	bIsDodging = true;
+}
+
+void AEnemyAgent::FinishedAttacking() {
+	ADragoonGameMode* game = ( ADragoonGameMode* )GetWorld()->GetAuthGameMode();
+
+	// remove the attack score for the relevant attack from the attack circle
+	if ( bIsAttacking ) {
+		if ( bIsStrongAttack )
+			game->attackCircle.AgentAttackFinished( strongAttackScore );
+		else if ( bIsFeintAttack )
+			game->attackCircle.AgentAttackFinished( feintAttackScore );
+		else
+			game->attackCircle.AgentAttackFinished( quickAttackScore );
+	}
+
+	Super::FinishedAttacking();
 }
 
 void AEnemyAgent::BasicAttack() {

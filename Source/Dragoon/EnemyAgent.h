@@ -108,6 +108,11 @@ public:
 	*/
 	void DodgeAttack( EAttackDirection dir );
 
+	/**
+	 * Sends message to attack circle that current attack is finished
+	 */ 
+	virtual void FinishedAttacking() override;
+
 protected:
 	/**
 	* Currently just calls parent's begin play event
