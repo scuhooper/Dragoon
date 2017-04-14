@@ -216,15 +216,19 @@ void ADragoonCharacter::ResetMoveFloats() {
 }
 
 void ADragoonCharacter::StrongAttack() {
+	// make sure nothing is currently in progress
 	if ( IsActionInProgress() )
 		return;
+	// set bools and start attack
 	bIsStrongAttack = true;
 	BasicAttack();
 }
 
 void ADragoonCharacter::FeintAttack() {
+	// make sure nothing is currently in progress
 	if ( IsActionInProgress() )
 		return;
+	// set bools and start attack
 	bIsFeintAttack = true;
 	BasicAttack();
 }
@@ -336,6 +340,7 @@ uint8 ADragoonCharacter::DetermineAttackDirection( FVector2D vec ) {
 }
 
 bool ADragoonCharacter::IsActionInProgress() {
+	// check for any bools returning true
 	if ( bIsAttacking || bIsDodging || bIsDead || bIsHurt || bIsRecovering || bIsGettingAttackDirection || bIsParrying )
 		return true;
 	else
@@ -343,16 +348,21 @@ bool ADragoonCharacter::IsActionInProgress() {
 }
 
 void ADragoonCharacter::MyTakeDamage( int Val ) {
+	// stop any actions that might be happening for animation reasons
 	FinishedAttacking();
 	FinishedDodging();
 	FinishedParrying();
 
+	// exit if we haven't recovered yet
 	if ( bIsHurt )
 		return;
 
+	// reduce health
 	health -= Val;
+	// remove control from controller
 	Controller->SetIgnoreMoveInput( true );
 
+	// check for dead or just injured
 	if ( health <= 0 )
 		Dead();
 	else
@@ -360,38 +370,43 @@ void ADragoonCharacter::MyTakeDamage( int Val ) {
 }
 
 void ADragoonCharacter::Dead() {
+	// set animation bool and turn off orienting towards camera direction
 	bIsDead = true;
 	bUseControllerRotationYaw = false;
 }
 
 void ADragoonCharacter::RecoveredFromHit() {
+	// reset control and bool
 	Controller->SetIgnoreMoveInput( false );
 	bIsHurt = false;
 }
 
 void ADragoonCharacter::FinishedRecovering() {
+	// reset control and bool
 	Controller->SetIgnoreMoveInput( false );
 	bIsRecovering = false;
 }
 
 void ADragoonCharacter::AttackWasParried() {
-	FinishedAttacking();
+	FinishedAttacking();	// stop attack animation
+	// setup control for anim BP
 	Controller->SetIgnoreMoveInput( true );
 	bIsRecovering = true;
 }
 
 void ADragoonCharacter::OnOverlapStart( AActor* thisActor, AActor* otherActor ) {
+	// check if hit by sword that isn't our sword
 	if ( otherActor->GetOwner() != this ) {
 		if ( Cast<ADragoonCharacter>( otherActor->GetOwner() ) ) {
 			ADragoonCharacter* otherChar = ( ADragoonCharacter* )otherActor->GetOwner();
 			if ( otherActor == otherChar->sword ) {
-				if ( otherChar->GetIsAttacking() ) {
+				if ( otherChar->GetIsAttacking() ) { // make sure other character is actively attacking
 					hitDirection = ( EAttackDirection )otherChar->GetDirectionOfAttack();
 					if ( otherChar->GetIsStrongAttacking() ) {
-						MyTakeDamage( otherChar->damage * otherChar->strongAttackDamageMultiplier );
+						MyTakeDamage( otherChar->damage * otherChar->strongAttackDamageMultiplier );	// take damage from strong attack
 					}
 					else {
-						MyTakeDamage( otherChar->damage );
+						MyTakeDamage( otherChar->damage );	// normal damage
 					}
 				}
 			}

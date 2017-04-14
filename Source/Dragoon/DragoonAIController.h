@@ -53,6 +53,9 @@ public:
 	 */
 	void AgentHasDied();
 
+	/**
+	 * Have controlled agent pick an attack, and check if that attack can be made with the attack circle
+	 */
 	void AttackPlayer();
 
 	/**
@@ -67,24 +70,11 @@ public:
 	FORCEINLINE ADragoonGameMode* GetGameMode() const { return game; }
 
 	/**
-	 *
+	 * Determine if predicted attack is trusted and choose proper reaction to attack
+	 * @param attackID	the calculated ID of the attack predicted by N gram system
+	 * @param confidenceInAttack	how much to trust the predicted attack ID
 	 */
 	void ReactToIncomingAttack( int attackID, float confidenceInAttack );
-
-	/**
-	*
-	*/
-	void QuickAttackReaction( EAttackDirection directionOfAttack );
-
-	/**
-	*
-	*/
-	void StrongAttackReaction( EAttackDirection directionOfAttack );
-
-	/**
-	*
-	*/
-	void FeintAttackReaction( EAttackDirection directionOfAttack );
 
 protected:
 	/**
@@ -97,8 +87,15 @@ protected:
 	 */
 	virtual void BeginPlay() override;
 
+	/**
+	* Exit the current state and enter the new state. Deletes the old state pointer at the end.
+	*/
 	void TransitionBetweenStates();
 
+	/**
+	* Updates the array of known actors when the AI perception is updated
+	* @param perceivedActors	The actor array supplied by the perception system
+	*/
 	UFUNCTION()
 	void SenseUpdate( TArray<AActor*> perceivedActors );
 };

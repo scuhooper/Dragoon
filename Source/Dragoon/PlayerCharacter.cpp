@@ -38,7 +38,7 @@ void APlayerCharacter::MyTakeDamage( int dmg ) {
 		return;
 
 	Super::MyTakeDamage( dmg );
-	// start first level over if player has dided
+	// start first level over if player has died
 	if ( GetIsDead() ) {
 		FTimerHandle DeathTimerHandle;
 		GetWorldTimerManager().SetTimer( DeathTimerHandle, this, &APlayerCharacter::RestartGame, 3 );
@@ -110,15 +110,18 @@ void APlayerCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputCo
 }
 
 bool APlayerCharacter::DidNewAttackOccur() {
+	// make sure nothing is currently happening
 	if ( GetIsAttacking() || GetIsDead() || GetIsDodging() || GetIsHurt() || GetIsParrying() || GetIsRecovering() ) {
 		return false;
 	}
 	else {
+		// start attack
 		BeginAttack();
 		return true;
 	}
 }
 
 void APlayerCharacter::RestartGame() {
+	// reload the first level of the game
 	UGameplayStatics::OpenLevel( this, TEXT( "Level1_TheHub" ) );
 }

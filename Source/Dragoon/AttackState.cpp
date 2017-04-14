@@ -23,7 +23,7 @@ void AttackState::EnterState( AEnemyAgent* agent ) {
 		agent->DrawSword();
 
 	// set a random time for waiting until next attack
-	timeBetweenAttacks = FMath::FRandRange( 3.0f, 5.0f );
+	timeBetweenAttacks = FMath::FRandRange( 2.0f, 3.5f );
 
 	// setup initial spot for agent
 	position = controller->GetAttackCircle()->GetLocationForAgent( agent );
@@ -57,7 +57,7 @@ void AttackState::StateTick( AEnemyAgent* agent, float deltaSeconds ) {
 	
 	// perform attack and reset timer
 	controller->AttackPlayer();
-	timeBetweenAttacks = FMath::FRandRange( 3.0f, 5.0f );
+	timeBetweenAttacks = FMath::FRandRange( 2.0f, 3.5f );
 	elapsedTime = 0;
 }
 

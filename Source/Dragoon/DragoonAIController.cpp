@@ -52,7 +52,9 @@ void ADragoonAIController::AgentHasDied() {
 }
 
 void ADragoonAIController::AttackPlayer() {
+	// choose what type of attack to make
 	int attackChoice = agent->ChooseAttack();
+	// check with the attack circle to see if it can be performed 
 	if ( attackCircle->CanAgentPerformAttack( attackChoice ) )
 		agent->PerformAttack( attackChoice );
 }
@@ -90,26 +92,25 @@ void ADragoonAIController::ReactToIncomingAttack( int attackID, float confidence
 
 	// choose appropriate response based on type of attack
 	if ( attackType == EAttackType::AT_Quick ) {
-		// call quick attack reaction
+		// react to quick attack by parrying
+		agent->ParryAttack( attackDirection );
 	}
 	else if ( attackType == EAttackType::AT_Strong ) {
-		// call strong attack reaction
+		// react to strong attacks by dodging
+		agent->DodgeAttack( attackDirection );
 	}
 	else if ( attackType == EAttackType::AT_Feint ) {
-		// call feint attack reaction
+		// react to feints with either doing nothing or attacking the player
+		float choice = FMath::FRand();
+		if ( choice < .75f ) {
+			// choose to do nothing
+			return;
+		}
+		else {
+			// respond to the player's feint with an attack
+			AttackPlayer();
+		}
 	}
-}
-
-void ADragoonAIController::QuickAttackReaction( EAttackDirection directionOfAttack ) {
-	agent->ParryAttack( directionOfAttack );	// attempt to parry the attack
-}
-
-void ADragoonAIController::StrongAttackReaction( EAttackDirection directionOfAttack ) {
-	// attempt to dodge the attack
-}
-
-void ADragoonAIController::FeintAttackReaction( EAttackDirection directionOfAttack ) {
-	// unsure of what to do for this reaction currently
 }
 
 void ADragoonAIController::Tick( float DeltaSeconds ) {
@@ -177,5 +178,5 @@ void ADragoonAIController::TransitionBetweenStates() {
 }
 
 void ADragoonAIController::SenseUpdate( TArray<AActor*> sensedActors ) {
-	perceivedActors = sensedActors;
+	perceivedActors = sensedActors;	// update owned array to mimic that of actors known by perception system
 }
