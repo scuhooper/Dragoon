@@ -30,11 +30,23 @@ private:
 	// variables to hold the previous three attacks made indices
 	int atk1 = 0, atk2 = 0, atk3 = 0;
 
-	// bool to start removing an entry from attackHistory when adding a new one
+	// maximum amount of attacks to store in attack history
+	int maxHistorySize = 50;
+
+	// bool to state if attacks need to be removed from the deque when new ones are added
 	bool bIsHistoryFull = false;
 
-	// maximum amount of attacks to store in attack history
-	int maxHistorySize;
+	// whether the information from history should be added to prediction loop (cannot be true until 3 attacks are in history)
+	bool bIsHistoryUsed = false;
+
+	// how much recent history should account for
+	int historyWeight = 2;
+
+	// the probability of an unknown or random attack
+	float predictionConfidence = 0.8f;
+
+	// what attack is predicted. Uses the ID system of attacks as its value
+	int nextAttackPrediction;
 
 public:
 	// default c-tor. not to be used.
@@ -77,10 +89,14 @@ public:
 	void RecordPlayerAttack( FAttack atk );
 
 	/**
-	 *
+	 * Let the AI Controller know that its agent has died
+	 * @param agent	the agent who has died
 	 */
 	void AgentHasDied( AEnemyAgent* agent );
 
-private:
-
+protected:
+	/**
+	* Algorithm to use attack occurences array and history deque to predict next attack
+	*/
+	void PredictNextAttack();
 };

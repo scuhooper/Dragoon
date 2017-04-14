@@ -14,7 +14,22 @@ class DRAGOON_API AEnemyAgent : public ADragoonCharacter
 	GENERATED_BODY()
 	
 public:
-	
+	// array of waypoints used to have agent patrol a certain path
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = PatrolState )
+	TArray<FVector> waypoints;
+
+	// position which a guard should protect
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = GuardState )
+	FVector guardPost = FVector::ZeroVector;
+
+	// should the agent wait once they arrive at waypoints
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = PatrolState )
+	bool bIsPatrolContinuous = true;
+
+	// particle system to spawn when the agent dies
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Particles )
+	UParticleSystem* emitter;
+
 private:
 	/**
 	 * A number to reflect the enemie's strength when joining the attack circle of a player
@@ -67,13 +82,31 @@ public:
 	 */
 	virtual void MyTakeDamage( int val ) override;
 
+	/**
+	 * Randomly choose which type of attack to perform.
+	 */
 	int ChooseAttack();
 
+	/**
+	* Call the respective attack function for attackToPerform
+	* @param attackToPerform	The int score of the type of attack to be performed
+	*/
 	void PerformAttack( int attackToPerform );
 
+	/**
+	* Perform a parry in the specified direction
+	*/
 	void ParryAttack( EAttackDirection dir );
 
+	/**
+	* Get whether an action is in progress for this agent
+	*/
 	bool IsBusy();
+
+	/**
+	* Dodge in a direction determined by the supplied direction of incoming attack
+	*/
+	void DodgeAttack( EAttackDirection dir );
 
 protected:
 	/**
@@ -83,8 +116,16 @@ protected:
 
 	virtual void BasicAttack() override;
 
+	virtual void Tick( float deltaSeconds ) override;
+
+	// get random attack direction
 	virtual void AttackDirectionChosen() override;
 
+	/**
+	 * Removes agent from blackboard, disables collision, and spawns the particle emitter.
+	 */
+	UFUNCTION( BlueprintCallable, Category = EnemyAgent )
+	void AgentDied();
 };
 
 // struct to represent attacks in the N-grams used by DragoonAIBlackboard

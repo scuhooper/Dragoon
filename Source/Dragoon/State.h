@@ -15,15 +15,15 @@ public:
 	/**
 	 * Logic to run when entering current state
 	 */
-	virtual void EnterState( AEnemyAgent* agent );
+	virtual void EnterState( AEnemyAgent* agent ) = 0;
 
 	/**
 	* Logic to update state every frame/specified time interval
 	*/
-	virtual void StateTick( AEnemyAgent* agent, float deltaSeconds );
+	virtual void StateTick( AEnemyAgent* agent, float deltaSeconds ) = 0;
 
 	/**
 	* Logic to run when leaving current state
 	*/
-	virtual void ExitState( AEnemyAgent* agent );
+	virtual void ExitState( AEnemyAgent* agent ) = 0;
 };

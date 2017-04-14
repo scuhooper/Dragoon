@@ -4,8 +4,14 @@
 #include "DragoonAIBlackboard.h"
 #include "DragoonGameMode.h"
 #include "PlayerCharacter.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 APlayerCharacter::APlayerCharacter() {
+	// register player for perception system stimulus
+	UAISenseConfig_Sight* sightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>( TEXT( "Sight Config" ) );
+	UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, sightConfig->GetSenseImplementation(), this );
 }
 
 APlayerCharacter::~APlayerCharacter() {
@@ -27,31 +33,44 @@ void APlayerCharacter::BeginPlay() {
 	AIBlackboard = &game->blackboard;
 }
 
+void APlayerCharacter::MyTakeDamage( int dmg ) {
+	if ( GetIsDead() )
+		return;
+
+	Super::MyTakeDamage( dmg );
+	// start first level over if player has died
+	if ( GetIsDead() ) {
+		FTimerHandle DeathTimerHandle;
+		GetWorldTimerManager().SetTimer( DeathTimerHandle, this, &APlayerCharacter::RestartGame, 3 );
+	}
+}
+
 void APlayerCharacter::PlayerAttack() {
-	BeginAttack();
+	if ( DidNewAttackOccur() ) {
 
-	// determine type of attack
-	EAttackType type;
-	if ( GetIsStrongAttacking() )
-		type = EAttackType::AT_Strong;
-	else if ( GetIsFeintAttacking() )
-		type = EAttackType::AT_Feint;
-	else
-		type = EAttackType::AT_Quick;
+		// determine type of attack
+		EAttackType type;
+		if ( GetIsStrongAttacking() )
+			type = EAttackType::AT_Strong;
+		else if ( GetIsFeintAttacking() )
+			type = EAttackType::AT_Feint;
+		else
+			type = EAttackType::AT_Quick;
 
-	// local vars for line trace
-	FHitResult hit;
-	TArray<FHitResult> hits;
-	FCollisionQueryParams params( FName( TEXT( "Attack Target Trace" ) ), true, this );
-	
-	// perform line trace from player extending out forward vector
-	if ( GetWorld()->LineTraceMultiByChannel( hits, GetActorLocation(), GetActorForwardVector() * 5000, ECollisionChannel::ECC_Pawn, params ) ) {
-		// cycle through hit objects until an enemy is found
-		for ( auto& target : hits ) {
-			if ( Cast<AEnemyAgent>( target.Actor.Get() ) ) {
-				// send attack information to blackboard because enemy was attacked and exit loop
-				AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, ( AEnemyAgent* )target.Actor.Get() ) );
-				break;
+		// local vars for line trace
+		FHitResult hit;
+		TArray<FHitResult> hits;
+		FCollisionQueryParams params( FName( TEXT( "Attack Target Trace" ) ), true, this );
+
+		// perform line trace from player extending out forward vector
+		if ( GetWorld()->LineTraceMultiByChannel( hits, GetActorLocation(), GetActorForwardVector() * 5000, ECollisionChannel::ECC_Pawn, params ) ) {
+			// cycle through hit objects until an enemy is found
+			for ( auto& target : hits ) {
+				if ( Cast<AEnemyAgent>( target.Actor.Get() ) ) {
+					// send attack information to blackboard because enemy was attacked and exit loop
+					AIBlackboard->RecordPlayerAttack( FAttack( ( EAttackDirection )directionOfAttack, type, ( AEnemyAgent* )target.Actor.Get() ) );
+					break;
+				}
 			}
 		}
 	}
@@ -88,4 +107,21 @@ void APlayerCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputCo
 
 	// VR headset functionality
 	PlayerInputComponent->BindAction( "ResetVR", IE_Pressed, this, &APlayerCharacter::OnResetVR );
+}
+
+bool APlayerCharacter::DidNewAttackOccur() {
+	// make sure nothing is currently happening
+	if ( GetIsAttacking() || GetIsDead() || GetIsDodging() || GetIsHurt() || GetIsParrying() || GetIsRecovering() ) {
+		return false;
+	}
+	else {
+		// start attack
+		BeginAttack();
+		return true;
+	}
+}
+
+void APlayerCharacter::RestartGame() {
+	// reload the first level of the game
+	UGameplayStatics::OpenLevel( this, TEXT( "Level1_TheHub" ) );
 }

@@ -28,12 +28,24 @@ public:
 	// sets up the variables for class
 	virtual void BeginPlay() override;
 
+	virtual void MyTakeDamage( int dmg ) override;
+
 protected:
 	/**
-	 * Calls the begin attack function. Determines attack specifics and updates blackboard if an enemy is being attacked.
+	 * Calls the did new attack occur function. Determines attack specifics and updates blackboard if an enemy is being attacked.
 	 */
 	void PlayerAttack();
 
 	// setup control mappings
 	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
+
+	/**
+	 * Checks if an action is in progress. If action in progress, returns false. Else, calls begin attack funciton and returns true.
+	 */
+	bool DidNewAttackOccur();
+
+	/**
+	 * Load Level 1
+	 */
+	void RestartGame();
 };
