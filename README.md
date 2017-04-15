@@ -1,3 +1,9 @@
+# Video Highlight
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/cFZIgq3tIok" frameborder="0" allowfullscreen></iframe>
+<br />
+<hr>
+
 # Prominent Features
 ## Attack Circle
 The game has a different approach to handling combat and enemies attacking. I concocted my own version of Kingdoms of Amalur’s Belgian AI system which uses a grid centered on the player to assign open slots to enemies.
