@@ -44,5 +44,8 @@ protected:
 	 */
 	bool DidNewAttackOccur();
 
+	/**
+	 * Load Level 1
+	 */
 	void RestartGame();
 };

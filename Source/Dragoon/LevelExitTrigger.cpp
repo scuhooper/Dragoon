@@ -33,7 +33,6 @@ void ULevelExitTrigger::TickComponent( float DeltaTime, ELevelTick TickType, FAc
 	// ...
 }
 
-
 void ULevelExitTrigger::OnOverlapStart( AActor* thisActor, AActor* otherActor ) {
 	UGameplayStatics::OpenLevel( this, levelName );
 }

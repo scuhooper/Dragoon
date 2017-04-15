@@ -140,8 +140,10 @@ void DragoonAIBlackboard::RecordPlayerAttack( FAttack atk ) {
 		// make target react to incoming attack
 		ADragoonAIController* AIController = (ADragoonAIController*)atk.target->GetController();
 		// testing access to ai controller. needs to be updated with actual logic for reacting to attacks
+		AIController->ReactToIncomingAttack( atk.id, predictionConfidence );
 	}
 
+	// begin next attack prediction
 	PredictNextAttack();
 }
 
@@ -156,7 +158,9 @@ void DragoonAIBlackboard::PredictNextAttack() {
 	TMap<int, int> cumulativeAttackOccurrences;
 	int totalAttackOccurrences = 0;
 
+	// history must have 3 elements to make one prediction from it
 	if ( !bIsHistoryUsed ) {
+		// use history once 3 elements exist
 		if ( attackHistory.size() >= 3 )
 			bIsHistoryUsed = true;
 	}
