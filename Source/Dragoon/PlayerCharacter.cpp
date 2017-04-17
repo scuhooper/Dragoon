@@ -4,8 +4,14 @@
 #include "DragoonAIBlackboard.h"
 #include "DragoonGameMode.h"
 #include "PlayerCharacter.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 APlayerCharacter::APlayerCharacter() {
+	// register player for perception system stimulus
+	UAISenseConfig_Sight* sightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>( TEXT( "Sight Config" ) );
+	UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, sightConfig->GetSenseImplementation(), this );
 }
 
 APlayerCharacter::~APlayerCharacter() {
@@ -25,6 +31,18 @@ void APlayerCharacter::BeginPlay() {
 
 	// get reference to blackboard
 	AIBlackboard = &game->blackboard;
+}
+
+void APlayerCharacter::MyTakeDamage( int dmg ) {
+	if ( GetIsDead() )
+		return;
+
+	Super::MyTakeDamage( dmg );
+	// start first level over if player has died
+	if ( GetIsDead() ) {
+		FTimerHandle DeathTimerHandle;
+		GetWorldTimerManager().SetTimer( DeathTimerHandle, this, &APlayerCharacter::RestartGame, 3 );
+	}
 }
 
 void APlayerCharacter::PlayerAttack() {
@@ -92,11 +110,18 @@ void APlayerCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputCo
 }
 
 bool APlayerCharacter::DidNewAttackOccur() {
+	// make sure nothing is currently happening
 	if ( GetIsAttacking() || GetIsDead() || GetIsDodging() || GetIsHurt() || GetIsParrying() || GetIsRecovering() ) {
 		return false;
 	}
 	else {
+		// start attack
 		BeginAttack();
 		return true;
 	}
+}
+
+void APlayerCharacter::RestartGame() {
+	// reload the first level of the game
+	UGameplayStatics::OpenLevel( this, TEXT( "Level1_TheHub" ) );
 }

@@ -89,10 +89,14 @@ public:
 	void RecordPlayerAttack( FAttack atk );
 
 	/**
-	 *
+	 * Let the AI Controller know that its agent has died
+	 * @param agent	the agent who has died
 	 */
 	void AgentHasDied( AEnemyAgent* agent );
 
 protected:
+	/**
+	* Algorithm to use attack occurences array and history deque to predict next attack
+	*/
 	void PredictNextAttack();
 };

@@ -294,7 +294,7 @@ public:
 	 * Enables movement input.
 	 */
 	UFUNCTION( BlueprintCallable, Category = Combat )
-	void FinishedAttacking();
+	virtual void FinishedAttacking();
 
 	/**
 	 * Sets IsDodging to false.

@@ -3,10 +3,31 @@
 #include "Dragoon.h"
 #include "AttackState.h"
 #include "AlertState.h"
+#include "GuardState.h"
+#include "PatrolState.h"
 #include "DragoonAIController.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 ADragoonAIController::ADragoonAIController() {
-	// do super awesome AI stuff
+	// setup AI Perception system
+	UAIPerceptionComponent* perception = CreateDefaultSubobject<UAIPerceptionComponent>( TEXT( "Perception Component" ) );
+	SetPerceptionComponent( *perception );
+	UAISenseConfig_Sight *sightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>( TEXT( "Sight Config" ) );
+
+	// configure sight sense parameters
+	sightConfig->SightRadius = 1000;
+	sightConfig->LoseSightRadius = 1500;
+	sightConfig->PeripheralVisionAngleDegrees = 90;
+	sightConfig->DetectionByAffiliation.bDetectEnemies = true;
+	sightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+	sightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+
+	// register sight sense with perception system
+	GetAIPerceptionComponent()->ConfigureSense( *sightConfig );
+	GetAIPerceptionComponent()->SetDominantSense( sightConfig->GetSenseImplementation() );
+	GetAIPerceptionComponent()->OnPerceptionUpdated.AddDynamic( this, &ADragoonAIController::SenseUpdate );
 }
 
 ADragoonAIController::~ADragoonAIController() {
@@ -20,7 +41,7 @@ ADragoonAIController::~ADragoonAIController() {
 
 void ADragoonAIController::AgentHasDied() {
 	// remove agent from attack circle and blackboard
-	if(attackCircle->GetEnemiesInCircle().Contains(agent))
+	if ( attackCircle->GetEnemiesInCircle().Contains( agent ) )
 		attackCircle->RemoveAgentFromCircle( agent );
 
 	game->blackboard.RemoveAgent( agent );
@@ -31,7 +52,9 @@ void ADragoonAIController::AgentHasDied() {
 }
 
 void ADragoonAIController::AttackPlayer() {
+	// choose what type of attack to make
 	int attackChoice = agent->ChooseAttack();
+	// check with the attack circle to see if it can be performed 
 	if ( attackCircle->CanAgentPerformAttack( attackChoice ) )
 		agent->PerformAttack( attackChoice );
 }
@@ -69,26 +92,25 @@ void ADragoonAIController::ReactToIncomingAttack( int attackID, float confidence
 
 	// choose appropriate response based on type of attack
 	if ( attackType == EAttackType::AT_Quick ) {
-		// call quick attack reaction
+		// react to quick attack by parrying
+		agent->ParryAttack( attackDirection );
 	}
 	else if ( attackType == EAttackType::AT_Strong ) {
-		// call strong attack reaction
+		// react to strong attacks by dodging
+		agent->DodgeAttack( attackDirection );
 	}
 	else if ( attackType == EAttackType::AT_Feint ) {
-		// call feint attack reaction
+		// react to feints with either doing nothing or attacking the player
+		float choice = FMath::FRand();
+		if ( choice < .75f ) {
+			// choose to do nothing
+			return;
+		}
+		else {
+			// respond to the player's feint with an attack
+			AttackPlayer();
+		}
 	}
-}
-
-void ADragoonAIController::QuickAttackReaction( EAttackDirection directionOfAttack ) {
-	agent->ParryAttack( directionOfAttack );	// attempt to parry the attack
-}
-
-void ADragoonAIController::StrongAttackReaction( EAttackDirection directionOfAttack ) {
-	// attempt to dodge the attack
-}
-
-void ADragoonAIController::FeintAttackReaction( EAttackDirection directionOfAttack ) {
-	// unsure of what to do for this reaction currently
 }
 
 void ADragoonAIController::Tick( float DeltaSeconds ) {
@@ -110,8 +132,6 @@ void ADragoonAIController::Tick( float DeltaSeconds ) {
 	// check if the state is attempting to move to a new state
 	if ( bIsStateChangeReady && nextState )
 		TransitionBetweenStates();	// move to new state
-
-	MoveToLocation( targetLoc );
 }
 
 void ADragoonAIController::BeginPlay() {
@@ -128,9 +148,13 @@ void ADragoonAIController::BeginPlay() {
 	game->blackboard.RegisterAgent( agent );
 
 	// setup initial state for agent
-	currentState = ( State* )new AlertState();
-	nextState = ( State* )new AlertState();
-	bIsStateChangeReady = true;
+	if ( agent->waypoints.Num() == 0 )
+		currentState = ( State* )new GuardState();
+	else
+		currentState = ( State* )new PatrolState();
+
+	// make sure state is started correctly
+	currentState->EnterState( agent );
 }
 
 void ADragoonAIController::TransitionBetweenStates() {
@@ -151,4 +175,8 @@ void ADragoonAIController::TransitionBetweenStates() {
 	
 	// state change has completed
 	bIsStateChangeReady = false;
+}
+
+void ADragoonAIController::SenseUpdate( TArray<AActor*> sensedActors ) {
+	perceivedActors = sensedActors;	// update owned array to mimic that of actors known by perception system
 }
